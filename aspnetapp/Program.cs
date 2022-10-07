@@ -4,8 +4,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 
-Log.Information("Starting up -5342");
-
+Log.Information("Starting up -");
 
 try
 {
@@ -18,7 +17,7 @@ try
     builder.Host.UseSerilog((ctx, lc) => lc
         .WriteTo.Console()
         .WriteTo.Seq("http://seq:5341"));
-        // .ReadFrom.Configuration(ctx.Configuration));
+    // .ReadFrom.Configuration(ctx.Configuration));
     //2.DI
     builder.Services.AddTransient<IOperationTransient, Operation>();
     builder.Services.AddScoped<IOperationScoped, Operation>();
@@ -48,26 +47,15 @@ try
 
     app.UseAuthorization();
 
-    app.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=Home}/{action=Index}/{id?}");
+    app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
     //1.
     app.MapGet("/env", () =>
     {
         return new EnvironmentInfo();
     });
-    app.MapGet("/test", () =>
-    {
-        Log.Information("Hello, {@User} at {Now}", new
-        {
-            Name = "a new username",
-            Tags = new[] { 1, 2, 3 }
-        }, DateTime.Now);
-    });
 
     app.Run();
-
 }
 catch (Exception ex)
 {
@@ -79,13 +67,4 @@ finally
     Log.CloseAndFlush();
 }
 
-//
-// docker build -t app .
-// docker run -dp 3000:3000 app
-// docker stop id && docker rm id = docker rm -f id
-//
-// docker exec -it id cat /data.txt
-// docker exec -it id mysql -u root -p 
-//
-// docker logs -f id
-//
+

@@ -1,5 +1,4 @@
 ﻿
-
 public class CustomMiddleware
 {
     private readonly RequestDelegate _next;

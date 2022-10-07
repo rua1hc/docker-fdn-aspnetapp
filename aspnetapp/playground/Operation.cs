@@ -1,4 +1,5 @@
-﻿public class Operation : IOperationTransient, IOperationScoped, IOperationSingleton
+﻿
+public class Operation : IOperationTransient, IOperationScoped, IOperationSingleton
 {
     public Operation()
     {
