@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
+//dotnet - ef migrations script --output initDb.sql --context DotNetTraining --idempotent
 public class DotNetTraining : DbContext
 {
     public DotNetTraining(DbContextOptions<DotNetTraining> options)
             : base(options) { }
 
-    public virtual DbSet<Contact> Contacts { get; set; }
+    public virtual DbSet<Contact> Contacts { get; set; } = null!;
 
     //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     //{

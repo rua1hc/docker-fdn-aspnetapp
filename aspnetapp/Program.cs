@@ -13,6 +13,8 @@ try
 
     // Add services to the container.
     builder.Services.AddControllersWithViews();
+    //4.
+    builder.Services.AddSwaggerGen();
 
     //1.
     builder.Host.UseSerilog((ctx, lc) => lc
@@ -32,14 +34,24 @@ try
         options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
     });
 
+    //4.
+    //builder.Services.AddSwaggerDocument();
+
     var app = builder.Build();
 
     //1.
     app.UseSerilogRequestLogging();
 
+    //4.
+    app.UseSwagger();
+    app.UseSwaggerUI();
+
     // Configure the HTTP request pipeline.
     if (!app.Environment.IsDevelopment())
     {
+        //app.UseOpenApi();
+        //app.UseSwaggerUi3();
+
         app.UseExceptionHandler("/Home/Error");
         // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
         app.UseHsts();
