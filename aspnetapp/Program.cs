@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Polly;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -13,8 +14,6 @@ try
 
     // Add services to the container.
     builder.Services.AddControllersWithViews();
-    //4.
-    builder.Services.AddSwaggerGen();
 
     //1.
     builder.Host.UseSerilog((ctx, lc) => lc
@@ -35,7 +34,21 @@ try
     });
 
     //4.
+    builder.Services.AddSwaggerGen();
     //builder.Services.AddSwaggerDocument();
+
+    //5.
+    var httpRetryPolicy = Policy
+        .HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+        .CircuitBreakerAsync(
+                handledEventsAllowedBeforeBreaking: 3,
+                durationOfBreak: TimeSpan.FromSeconds(10), onBreak: (_, duration) => Log.Warning($"Circuit tripped. Circuit is open and requests won't be allowed through for duration={duration}"),
+                onReset: () => Log.Warning("Circuit closed. Requests are now allowed through"),
+                onHalfOpen: () => Log.Warning("Circuit is now half-opened and will test the service with the next request"));
+    //.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(retryAttempt));
+
+    builder.Services.AddHttpClient("randomnumber", c => { c.BaseAddress = new Uri("https://localhost:12345/"); });
+    builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(httpRetryPolicy);
 
     var app = builder.Build();
 
