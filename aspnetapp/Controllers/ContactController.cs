@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace TodoApi.Controllers
+namespace ContactApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
