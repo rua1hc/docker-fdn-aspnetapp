@@ -3,36 +3,39 @@ version: '3.9'
 services:
     app:
         build: .
-        ports:
-            - 5000:80
         depends_on:
             - mysql
             - seq
         volumes:
-            - app_data:/var/lib/aspnet
+            - vdata:/var/lib/aspnet
+        ports:
+            - 7131:80
         # networks:
         #     - app_network
     mysql:
         image: mysql:5.7
-        volumes:
-            - app_data:/var/lib/mysql
         environment:
-            MYSQL_DATABASE: todos
-            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_DATABASE: DotNetTraining
+            MYSQL_ROOT_PASSWORD: 240690
+        volumes:
+            - ./dbSetup.sql:/docker-entrypoint-initdb.d/dbSetup.sql
+            - vdata:/var/lib/mysql
+        # ports:
+        #     - 3306:3306
     seq:
         image: datalust/seq
         restart: unless-stopped
         environment:
           - ACCEPT_EULA=Y
         volumes:
-            - app_data:/var/lib/seq
+            - vdata:/var/lib/seq
         ports:
             - 5342:5341
             - 8080:80
         # networks:
         #     - app_network
 volumes:
-    app_data:
+    vdata:
 # networks:
 #     app_network:
 #       driver: bridge
@@ -46,6 +49,6 @@ volumes:
     #     ports:
     #         - 1433:1433
     #     volumes:
-    #         - app_data:/data/mssql
+    #         - vdata:/data/mssql
     #     # networks:
     #     #     - app_network

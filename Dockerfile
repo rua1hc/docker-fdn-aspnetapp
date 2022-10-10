@@ -14,4 +14,5 @@ RUN dotnet publish -c Release -o /app --use-current-runtime --self-contained fal
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
 COPY --from=build /app .
+ENV ASPNETCORE_ENVIRONMENT Development
 ENTRYPOINT ["dotnet", "aspnetapp.dll"]

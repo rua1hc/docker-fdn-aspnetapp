@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -19,9 +20,17 @@ try
         .WriteTo.Seq("http://seq:5341"));
     // .ReadFrom.Configuration(ctx.Configuration));
     //2.DI
-    builder.Services.AddTransient<IOperationTransient, Operation>();
-    builder.Services.AddScoped<IOperationScoped, Operation>();
-    builder.Services.AddSingleton<IOperationSingleton, Operation>();
+    //builder.Services.AddTransient<IOperationTransient, Operation>();
+    //builder.Services.AddScoped<IOperationScoped, Operation>();
+    //builder.Services.AddSingleton<IOperationSingleton, Operation>();
+
+    //3.
+    // Add services to the container.
+    builder.Services.AddDbContext<DotNetTraining>(options =>
+    {
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+    });
 
     var app = builder.Build();
 
@@ -39,9 +48,9 @@ try
     app.UseHttpsRedirection();
     app.UseStaticFiles();
 
-    //2.
-    app.MiddlewareExtented();
-    app.MiddlewareExtentedMore();
+    //2.DI
+    //app.MiddlewareExtented();
+    //app.MiddlewareExtentedMore();
 
     app.UseRouting();
 
@@ -66,5 +75,3 @@ finally
     Log.Information("Shut down complete");
     Log.CloseAndFlush();
 }
-
-
