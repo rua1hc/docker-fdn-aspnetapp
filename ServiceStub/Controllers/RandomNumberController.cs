@@ -1,26 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using static ServiceStub.Program;
 
-[ApiController]
-[Route("[controller]")]
-public class RandomNumberController : ControllerBase
+namespace ServiceStub.Controllers
 {
-    public static RN_RET_MODE ReturnMode { get; set; } = RN_RET_MODE.RET_200_OK;
-
-    [HttpGet()]
-    public ActionResult<string> Get()
+    [ApiController]
+    [Route("[controller]")]
+    public class RandomNumberController : ControllerBase
     {
-        Console.WriteLine($"Request received: GET /RandomNumber. Mode={ReturnMode}");
+        public static ReturnMode ReturnMode { get; set; } = ReturnMode.ok200;
 
-        if (ReturnMode == RN_RET_MODE.RET_200_OK)
-            return Ok(new Random().Next());
+        [HttpGet()]
+        public ActionResult<string> Get()
+        {
+            Console.WriteLine($"Request received: GET /RandomNumber. Mode={ReturnMode}");
 
-        return NotFound();
+            if (ReturnMode == ReturnMode.ok200)
+                return Ok(new Random().Next());
+
+            return NotFound();
+        }
     }
-}
 
-public enum RN_RET_MODE
-{
-    RET_200_OK,
-    RET_404_NOTFOUND
 }

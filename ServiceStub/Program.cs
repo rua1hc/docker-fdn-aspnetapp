@@ -25,18 +25,18 @@ namespace ServiceStub
 					.ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders());
 				});
 
-
 			await Task.WhenAny(builder.RunConsoleAsync(), commandLoopTask);
 		}
+
 		private static void CommandLoop(string url)
 		{
 			Console.WriteLine($"Stubbed endpoint: GET {url}/status");
 			Console.WriteLine("Commands:");
-			Console.WriteLine("\tset-status <Healthy, Unhealthy, or Degraded> Example: set-status Healthy");
+			Console.WriteLine("\tset-status <ok200, nf404> Example: set-status ok200");
 
 			while (true)
 			{
-				Console.WriteLine($"Current status: {HealthStatusController.Status}");
+				Console.WriteLine($"Current return mode: {RandomNumberController.ReturnMode}");
 				var args = Console.ReadLine().Split();
 
 				if (args.Length < 2 || args[0] != "set-status")
@@ -45,15 +45,21 @@ namespace ServiceStub
 					continue;
 				}
 
-				if (!Enum.TryParse<HealthStatus>(args[1], ignoreCase: true, out HealthStatus status))
+				if (!Enum.TryParse<ReturnMode>(args[1], ignoreCase: true, out ReturnMode status))
 				{
-					Console.WriteLine("Invalid value for HealthStatus");
+					Console.WriteLine("Invalid status value");
 					continue;
 				}
 
-				HealthStatusController.Status = status;
-				RandomNumberController.ReturnMode = status == HealthStatus.Healthy ? RN_RET_MODE.RET_200_OK : RN_RET_MODE.RET_404_NOTFOUND;
+				RandomNumberController.ReturnMode = status;
+				HealthStatusController.Status = status == ReturnMode.ok200 ? HealthStatus.Healthy : HealthStatus.Unhealthy;
 			}
+		}
+
+		public enum ReturnMode
+		{
+			ok200,
+			nf404
 		}
 	}
 }

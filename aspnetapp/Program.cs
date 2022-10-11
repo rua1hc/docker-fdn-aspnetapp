@@ -18,15 +18,15 @@ try
     //1.
     builder.Host.UseSerilog((ctx, lc) => lc
         .WriteTo.Console()
-        .WriteTo.Seq("http://seq:5341"));
-    // .ReadFrom.Configuration(ctx.Configuration));
+        //.WriteTo.Seq("http://seq:5341")
+        .ReadFrom.Configuration(ctx.Configuration));
+
     //2.DI
     //builder.Services.AddTransient<IOperationTransient, Operation>();
     //builder.Services.AddScoped<IOperationScoped, Operation>();
     //builder.Services.AddSingleton<IOperationSingleton, Operation>();
 
     //3.
-    // Add services to the container.
     builder.Services.AddDbContext<DotNetTraining>(options =>
     {
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -42,12 +42,13 @@ try
         .HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
         .CircuitBreakerAsync(
                 handledEventsAllowedBeforeBreaking: 3,
-                durationOfBreak: TimeSpan.FromSeconds(10), onBreak: (_, duration) => Log.Warning($"Circuit tripped. Circuit is open and requests won't be allowed through for duration={duration}"),
+                durationOfBreak: TimeSpan.FromSeconds(10),
+                onBreak: (_, duration) => Log.Warning($"Circuit tripped. Circuit is open and requests won't be allowed through for duration={duration}"),
                 onReset: () => Log.Warning("Circuit closed. Requests are now allowed through"),
                 onHalfOpen: () => Log.Warning("Circuit is now half-opened and will test the service with the next request"));
     //.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(retryAttempt));
 
-    builder.Services.AddHttpClient("randomnumber", c => { c.BaseAddress = new Uri("https://localhost:12345/"); });
+    builder.Services.AddHttpClient("randApi", c => { c.BaseAddress = new Uri("https://localhost:12345/"); });
     builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(httpRetryPolicy);
 
     var app = builder.Build();
