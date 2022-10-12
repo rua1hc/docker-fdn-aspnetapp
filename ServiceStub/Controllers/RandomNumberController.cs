@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Serilog;
 using System;
 using static ServiceStub.Program;
 
@@ -13,7 +14,13 @@ namespace ServiceStub.Controllers
         [HttpGet()]
         public ActionResult<string> Get()
         {
-            Console.WriteLine($"Request received: GET /RandomNumber. Mode={ReturnMode}");
+            Log.Information("Request received: GET /RandomNumber Mode={ReturnMode}", ReturnMode);
+
+            foreach (var header in Request.Headers)
+            {
+                Log.Information("{headerKey}={headerValue}", header.Key, header.Value);
+            }
+            Response.Headers.Add("X-Response-ID", "service-2");
 
             if (ReturnMode == ReturnMode.ok200)
                 return Ok(new Random().Next());

@@ -28,12 +28,6 @@ DELETE http://localhost:7131/api/contact/99
 
 
 ### ### ###
-POST http://localhost:7131/api/auth
-content-type: application/json
-
-{
-    "email": "user2@gmail.com",
-    "password": "user2"
-}
+https://localhost:7131/testPollyCB
 ###
 

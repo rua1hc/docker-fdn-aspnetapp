@@ -6,8 +6,10 @@ services:
         depends_on:
             - mysql
             - seq
+        environment:
+            SEQ_SERVER_URL: http://seq:5341
         volumes:
-            - vdata:/var/lib/aspnet
+            - ./:/aspnetapp
         ports:
             - 7131:80
         # networks:

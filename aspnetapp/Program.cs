@@ -6,7 +6,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 
-Log.Information("Starting up -");
+Log.Information("Starting up - aspnetapp");
 
 try
 {
@@ -48,7 +48,12 @@ try
                 onHalfOpen: () => Log.Warning("Circuit is now half-opened and will test the service with the next request"));
     //.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(retryAttempt));
 
-    builder.Services.AddHttpClient("randApi", c => { c.BaseAddress = new Uri("https://localhost:12345/"); });
+    builder.Services.AddHttpClient("randApi", c =>
+    {
+        c.BaseAddress = new Uri("https://localhost:12345/");
+        c.DefaultRequestHeaders.Add("X-token", "add-header-1");
+        c.DefaultRequestHeaders.Add("X-REQUEST-ID", "service-1");
+    });
     builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(httpRetryPolicy);
 
     var app = builder.Build();

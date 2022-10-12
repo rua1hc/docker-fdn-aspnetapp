@@ -22,7 +22,19 @@ public class TestPollyCBController : ControllerBase
     public async Task<ActionResult<string>> Get()
     {
         var client = _httpClientFactory.CreateClient("randApi");
+        client.DefaultRequestHeaders.Add("X-token2", "add-header-2");
+
+        //var request = new HttpRequestMessage(HttpMethod.Get, client.BaseAddress + "randomnumber")
+        //{
+        //    Headers =
+        //    {
+        //        { "X-TOKEN2", "rua2hc" }
+        //    }
+        //};
+        //var response = await client.SendAsync(request);
+
         var response = await _policy.ExecuteAsync(() => client.GetAsync("randomnumber"));
+
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
     }

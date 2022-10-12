@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using ServiceStub.Controllers;
 using System;
 using System.Threading.Tasks;
@@ -12,6 +14,16 @@ namespace ServiceStub
 	{
 		public static async Task Main(string[] args)
 		{
+			var configuration = new ConfigurationBuilder()
+				.AddJsonFile("appsettings.json")
+				.Build();
+			Log.Logger = new LoggerConfiguration()
+				.WriteTo.Console()
+				.ReadFrom.Configuration(configuration)
+				.CreateLogger();
+
+			Log.Information("Starting up - ServiceStub");
+
 			string url = "https://localhost:12345";
 
 			var commandLoopTask = Task.Run(() => CommandLoop(url));
@@ -30,24 +42,23 @@ namespace ServiceStub
 
 		private static void CommandLoop(string url)
 		{
-			Console.WriteLine($"Stubbed endpoint: GET {url}/status");
-			Console.WriteLine("Commands:");
-			Console.WriteLine("\tset-status <ok200, nf404> Example: set-status ok200");
+			Log.Information("Stubbed endpoint: GET {url}/status", url);
+			Log.Information("Commands: set-status [ok200, nf404]");
 
 			while (true)
 			{
-				Console.WriteLine($"Current return mode: {RandomNumberController.ReturnMode}");
+				Log.Information("Current return mode: {ReturnMode}", RandomNumberController.ReturnMode);
 				var args = Console.ReadLine().Split();
 
 				if (args.Length < 2 || args[0] != "set-status")
 				{
-					Console.WriteLine("Invalid command");
+					Log.Information("Invalid command");
 					continue;
 				}
 
 				if (!Enum.TryParse<ReturnMode>(args[1], ignoreCase: true, out ReturnMode status))
 				{
-					Console.WriteLine("Invalid status value");
+					Log.Information("Invalid status value");
 					continue;
 				}
 
