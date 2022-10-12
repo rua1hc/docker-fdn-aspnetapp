@@ -1,19 +1,36 @@
-version: '3.9'
+version: "3.9"
 
 services:
     app:
-        build: .
+        build:
+            context: .
+            dockerfile: aspnetapp/Dockerfile
         depends_on:
             - mysql
             - seq
         environment:
-            SEQ_SERVER_URL: http://seq:5341
+            ASPNETCORE_ENVIRONMENT: Development
+            # SEQ_SERVER_URL: http://seq:5341
         volumes:
-            - ./:/aspnetapp
+            - ./aspnetapp:/src
         ports:
             - 7131:80
-        # networks:
-        #     - app_network
+            - 5011:443
+        # working_dir: /src/aspnetapp
+        # command: "dotnet aspnetapp.dll"
+    # stub:
+    #     build:
+    #         context: .
+    #         dockerfile: ServiceStub/Dockerfile
+    #     # depends_on:
+    #     #     - seq
+    #     environment:
+    #         ASPNETCORE_ENVIRONMENT: Development
+    #         # SEQ_SERVER_URL: http://seq:5341
+    #     volumes:
+    #         - ./ServiceStub:/src
+    #     ports:
+    #         - 12345:80
     mysql:
         image: mysql:5.7
         environment:
@@ -21,21 +38,19 @@ services:
             MYSQL_ROOT_PASSWORD: 240690
         volumes:
             - ./dbSetup.sql:/docker-entrypoint-initdb.d/dbSetup.sql
-            - vdata:/var/lib/mysql
+            - vdata:/lib/mysql
         # ports:
         #     - 3306:3306
     seq:
         image: datalust/seq
         restart: unless-stopped
         environment:
-          - ACCEPT_EULA=Y
+            - ACCEPT_EULA=Y
         volumes:
-            - vdata:/var/lib/seq
+            - vdata:/lib/seq
         ports:
             - 5342:5341
             - 8080:80
-        # networks:
-        #     - app_network
 volumes:
     vdata:
 # networks:
@@ -52,5 +67,3 @@ volumes:
     #         - 1433:1433
     #     volumes:
     #         - vdata:/data/mssql
-    #     # networks:
-    #     #     - app_network
