@@ -1,0 +1,47 @@
+###
+https://localhost:7275/api/jwt/public
+
+
+###
+POST https://localhost:7275/users/RefreshToken
+content-type: application/json
+
+{
+    "Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6Ijg3YTBjZjNhLTZiOGItNDgwYi04ODc2LTg4Y2JiYjRiOGY3YyIsImVtYWlsIjoidXNlcjVAaW5mby52biIsImp0aSI6IjRmYmEzMGVhLThkYmItNGFkNS1iNDJlLTllNmYwYjM2ZGRkNCIsIm5iZiI6MTY2NjAwNDQ2NywiZXhwIjoxNjY2MDI2MDY3LCJpYXQiOjE2NjYwMDQ0Njd9.8X595ecfYM1epkkvhDqUiqI0y4tgIhEs6AuDidgSCOM",
+    "RefreshToken": "VN3C151F3I0SJFA3SSIDKF074805dc528-3708-484a-abd2-81929306e627"
+}
+
+
+### ### ###
+https://localhost:7275/users
+###
+https://localhost:7275/users/8e974a41-ffa8-4da4-a326-50b8d0f41252
+###
+POST https://localhost:7275/users
+content-type: application/json
+
+{
+    "Email": "user1@info.vn",
+    "Password": "user1",
+    "Role": "Member"
+}
+###
+PUT https://localhost:7275/users/4
+content-type: application/json
+
+{
+    "Id": 5,
+    "FirstName": "user4 fnUp1",
+    "LastName": "user4 ln",
+    "Email": "user4@info.vn",
+    "Phone": "1004"
+}
+###
+DELETE https://localhost:7275/users/8e974a41-ffa8-4da4-a326-50b8d0f41252
+# x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+
+
+
+### ### ###
+httpss://localhost:7275/testPollyCB
+###
