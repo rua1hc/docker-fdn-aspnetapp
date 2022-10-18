@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using WebApp1.Config;
 using WebApp1.Data;
@@ -16,7 +17,10 @@ using WebApp1.Models.DTO.Responses;
 
 namespace WebApp1.Controllers
 {
-
+    //todo1 add login
+    //todo2 add cors
+    //Header Autho..:bearer jwt
+    //[author(authSchem = jwtBeardef.authSchem, Role = "Admin")]
     [Route("[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -24,49 +28,64 @@ namespace WebApp1.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly TokenValidationParameters _tokenValidationParameters;
-        private readonly JwtConfig _jwtConfig; 
+        private readonly JwtConfig _jwtConfig;
+        private readonly IMapper _mapper;
         private readonly ApplicationDbContext _apiDbContext;
         public UsersController(UserManager<IdentityUser> userManager,
                                 RoleManager<IdentityRole> roleManager,
                                 TokenValidationParameters tokenValidationParameters,
                                 IOptionsMonitor<JwtConfig> optionsMonitor,
-                                ApplicationDbContext apiDbContext)
+                                IMapper mapper,
+        ApplicationDbContext apiDbContext)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _tokenValidationParameters = tokenValidationParameters;
             _jwtConfig = optionsMonitor.CurrentValue;
+            _mapper = mapper;
             _apiDbContext = apiDbContext;
         }
 
         // GET: Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<IdentityUser>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<UserViewModel>>> GetUsers()
         {
-            return await _userManager.Users.ToListAsync();
+            var users = await _userManager.Users.ToListAsync();
+            var usersViewModel = _mapper.Map<List<UserViewModel>>(users);
+            return Ok(usersViewModel);
         }
 
-        // GET: Users/1
-        [HttpGet("{Id}")]
-        public async Task<ActionResult<IdentityUser>> GetUser(string Id)
+        // GET: Users/email
+        [HttpGet("{email}")]
+        public async Task<ActionResult> GetUser(string email)
         {
-            var User = await _userManager.FindByIdAsync(Id);
-            return User == null ? NotFound() : Ok(User);
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return NotFound() ;
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var claims = await _userManager.GetClaimsAsync(user);
+
+            return Ok(new UserResponse()
+            {
+                User = _mapper.Map<UserViewModel>(user),
+                Roles = roles,
+                Claims = claims
+            });
         }
 
         // POST: Users
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult<IdentityUser>> AddUser(UserRegisterReqDto user)
         {
             if (ModelState.IsValid)
             {
                 var existingUser = await _userManager.FindByEmailAsync(user.Email);
-
-                if (existingUser != null) return BadRequest(new RegistrationResponse()
-                    {
-                        Success = false,
-                        Errors = new List<string>(){ "Email already exist" }
-                    });
+                if (existingUser != null) return BadRequest(new CustomResponse()
+                {
+                    Success = false,
+                    Errors = new List<string>() { "Email already exist" }
+                });
 
                 var newUser = new IdentityUser() { Email = user.Email, UserName = user.Email };
                 var isCreated = await _userManager.CreateAsync(newUser, user.Password);
@@ -79,52 +98,51 @@ namespace WebApp1.Controllers
                     //            Token = jwtToken
                     //        });
 
-                    //await _userManager.AddToRoleAsync(newUser, user.Role);
+                    var createdUser = await _userManager.FindByEmailAsync(user.Email);
+                    var result = await _userManager.AddToRoleAsync(createdUser, user.Role);
 
+                    var defaultClaim = new Claim("ClaimPermission", DefaultClaimConfig.Permission[user.Role]);
+                    result = await _userManager.AddClaimAsync(createdUser, defaultClaim);
+
+                    //check result.Succeeded?
                     return Ok(await GenerateJwtToken(newUser));
                 }
 
-                return new JsonResult(new RegistrationResponse(){
-                    Success = false, 
+                return new JsonResult(new CustomResponse()
+                {
+                    Success = false,
                     Errors = isCreated.Errors.Select(x => x.Description).ToList()
-                }) { StatusCode = 500 };
+                })
+                { StatusCode = 500 };
             }
 
-            return BadRequest(new RegistrationResponse()
+            return BadRequest(new CustomResponse()
             {
                 Success = false,
-                Errors = new List<string>(){ "Invalid payload" }
+                Errors = new List<string>() { "Invalid payload" }
             });
         }
 
-        //// PUT: User/2
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateUser(int id, User User)
-        //{
-        //    if (id != User.Id) return BadRequest();
+        // PUT: Users/2
+        [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> UpdateUser(UserRegisterReqDto user)
+        {
+            //if (id != User.Id) return BadRequest();
 
-        //    var UserDb = await _context.Users.FindAsync(id);
-        //    if (UserDb == null) return NotFound();
+            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+            if (existingUser == null) return NotFound();
 
-        //    UserDb.FirstName = User.FirstName;
-        //    UserDb.LastName = User.LastName;
-        //    UserDb.Email = User.Email;
-        //    UserDb.Phone = User.Phone;
+            existingUser.Email = user.Email;
 
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException) when (!UserExists(id))
-        //    {
-        //        return NotFound();
-        //    }
+            await _userManager.UpdateAsync(existingUser);
 
-        //    return NoContent();
-        //}
+            return Ok();
+        }
 
         // DELETE: Users/3
         [HttpDelete("{Id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteUser(string Id)
         {
             var existingUser = await _userManager.FindByIdAsync(Id);
@@ -133,14 +151,34 @@ namespace WebApp1.Controllers
             IdentityResult result = await _userManager.DeleteAsync(existingUser);
             if (result.Succeeded) return Ok(existingUser);
 
-            return new JsonResult(new RegistrationResponse() {
-                Success = false, 
-                Errors = result.Errors.Select(x => x.Description).ToList() 
-            }) { StatusCode = 500 };
+            return new JsonResult(new CustomResponse()
+            {
+                Success = false,
+                Errors = result.Errors.Select(x => x.Description).ToList()
+            })
+            { StatusCode = 500 };
+        }
+
+        //////
+        [HttpPut]
+        [Route("users/{Id}/roles")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> UpdateUserRole(string Id, string roles)
+        {
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("users/{Id}/claims")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> UpdateUserClaim(string Id, string claims)
+        {
+            return Ok();
         }
 
 
-        //
+
+        //////
         [HttpPost]
         [Route("RefreshToken")]
         public async Task<IActionResult> RefreshToken([FromBody] TokenRequest tokenRequest)
@@ -151,7 +189,7 @@ namespace WebApp1.Controllers
 
                 if (res == null)
                 {
-                    return BadRequest(new RegistrationResponse()
+                    return BadRequest(new CustomResponse()
                     {
                         Errors = new List<string>() { "Invalid tokens" },
                         Success = false
@@ -161,7 +199,7 @@ namespace WebApp1.Controllers
                 return Ok(res);
             }
 
-            return BadRequest(new RegistrationResponse()
+            return BadRequest(new CustomResponse()
             {
                 Errors = new List<string>() { "Invalid payload" },
                 Success = false
@@ -186,16 +224,16 @@ namespace WebApp1.Controllers
                     }
                 }
 
-                //var utcExpiryDate = long.Parse(principal.Claims.First(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
-                //var expDate = UnixTimeStampToDateTime(utcExpiryDate);
-                //if (expDate > DateTime.UtcNow)
-                //{
-                //    return new AuthResult()
-                //    {
-                //        Errors = new List<string>() { "Cannot refresh this since the token has not expired" },
-                //        Success = false
-                //    };
-                //}
+                var utcExpiryDate = long.Parse(principal.Claims.First(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+                var expDate = UnixTimeStampToDateTime(utcExpiryDate);
+                if (expDate > DateTime.UtcNow)
+                {
+                    return new AuthResult()
+                    {
+                        Errors = new List<string>() { "Cannot refresh this since the token has not expired" },
+                        Success = false
+                    };
+                }
 
                 var storedRefreshToken = await _apiDbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == tokenRequest.RefreshToken);
                 if (storedRefreshToken == null)
@@ -203,15 +241,6 @@ namespace WebApp1.Controllers
                     return new AuthResult()
                     {
                         Errors = new List<string>() { "refresh token doesnt exist" },
-                        Success = false
-                    };
-                }
-
-                if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
-                {
-                    return new AuthResult()
-                    {
-                        Errors = new List<string>() { "token has expired, user needs to relogin" },
                         Success = false
                     };
                 }
@@ -245,12 +274,17 @@ namespace WebApp1.Controllers
                     };
                 }
 
-                storedRefreshToken.IsUsed = true;
-                _apiDbContext.RefreshTokens.Update(storedRefreshToken);
-                await _apiDbContext.SaveChangesAsync();
+                if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
+                {
+                    return new AuthResult()
+                    {
+                        Errors = new List<string>() { "token has expired, user needs to relogin" },
+                        Success = false
+                    };
+                }
 
                 var dbUser = await _userManager.FindByIdAsync(storedRefreshToken.UserId);
-                return await GenerateJwtToken(dbUser);
+                return await GenerateJwtToken(dbUser, storedRefreshToken);
             }
             catch (Exception ex)
             {
@@ -258,59 +292,93 @@ namespace WebApp1.Controllers
             }
         }
 
-        private DateTime UnixTimeStampToDateTime(double unixTimeStamp)
-        {
-            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-            dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToUniversalTime();
-            return dtDateTime;
-        }
-
-        private async Task<AuthResult> GenerateJwtToken(IdentityUser user)
+        private async Task<AuthResult> GenerateJwtToken(IdentityUser user, RefreshToken? storedRefreshToken = null)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
             var key = Encoding.ASCII.GetBytes(_jwtConfig.Secret);
 
+            var claims = await GetValidClaims(user);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim("Id", user.Id),
-                    //new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    // the JTI is used for refresh token
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                }),
-                Expires = DateTime.UtcNow.AddHours(6),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                                                            SecurityAlgorithms.HmacSha256)
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddHours(24),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
             };
 
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = jwtTokenHandler.WriteToken(token);
 
-            var refreshToken = new RefreshToken()
+            if (storedRefreshToken != null)
             {
-                JwtId = token.Id,
-                IsUsed = false,
-                UserId = user.Id,
-                AddedDate = DateTime.UtcNow,
-                ExpiryDate = DateTime.UtcNow.AddYears(1),
-                IsRevoked = false,
-                Token = RandomString(25) + Guid.NewGuid()
-            };
+                storedRefreshToken.JwtId = token.Id;
+                storedRefreshToken.IsUsed = true;
 
-            await _apiDbContext.RefreshTokens.AddAsync(refreshToken);
-            await _apiDbContext.SaveChangesAsync();
+                _apiDbContext.RefreshTokens.Update(storedRefreshToken);
+                await _apiDbContext.SaveChangesAsync();
 
-            return new AuthResult()
+                return new AuthResult()
+                {
+                    Token = jwtToken,
+                    Success = true,
+                    RefreshToken = storedRefreshToken.Token
+                };
+            }
+            else
             {
-                Token = jwtToken,
-                Success = true,
-                RefreshToken = refreshToken.Token
-            };
+                var refreshToken = new RefreshToken()
+                {
+                    JwtId = token.Id,
+                    IsUsed = false,
+                    UserId = user.Id,
+                    AddedDate = DateTime.UtcNow,
+                    ExpiryDate = DateTime.UtcNow.AddYears(1),
+                    IsRevoked = false,
+                    Token = RandomString(25) + Guid.NewGuid()
+                };
+
+                await _apiDbContext.RefreshTokens.AddAsync(refreshToken);
+                await _apiDbContext.SaveChangesAsync();
+
+                return new AuthResult()
+                {
+                    Token = jwtToken,
+                    Success = true,
+                    RefreshToken = refreshToken.Token
+                };
+            }
         }
 
+        private async Task<List<Claim>> GetValidClaims(IdentityUser user)
+        {
+            IdentityOptions _options = new IdentityOptions();
+            var claims = new List<Claim>
+            {
+                new Claim("Id", user.Id),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(_options.ClaimsIdentity.UserIdClaimType, user.Id.ToString()),
+                new Claim(_options.ClaimsIdentity.UserNameClaimType, user.UserName),
+            };
+
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
+            claims.AddRange(userClaims);
+            foreach (var userRole in userRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, userRole));
+                var role = await _roleManager.FindByNameAsync(userRole);
+                if (role != null)
+                {
+                    var roleClaims = await _roleManager.GetClaimsAsync(role);
+                    foreach (Claim roleClaim in roleClaims)
+                    {
+                        claims.Add(roleClaim);
+                    }
+                }
+            }
+            return claims;
+        }
 
         public string RandomString(int length)
         {
@@ -320,6 +388,14 @@ namespace WebApp1.Controllers
                         .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
+        private DateTime UnixTimeStampToDateTime(double unixTimeStamp)
+        {
+            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToUniversalTime();
+            return dtDateTime;
+        }
+
+        //
         public string BuildToken(Claim[] claims)
         {
 
@@ -336,15 +412,7 @@ namespace WebApp1.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public string BuildRefreshToken()
-        {
-            var randomNumber = new byte[32];
-            using (var randomNumberGenerator = RandomNumberGenerator.Create())
-            {
-                randomNumberGenerator.GetBytes(randomNumber);
-                return Convert.ToBase64String(randomNumber);
-            }
-        }
+
     }
 
 }

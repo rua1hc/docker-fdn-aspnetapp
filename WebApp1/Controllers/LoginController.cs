@@ -14,9 +14,9 @@ namespace WebApp1.Controllers
     public class UserLoginRequest
     {
         [Required]
-        public string Email { get; set; }
+        public string Email { get; set; } = null!;
         [Required]
-        public string Password { get; set; }
+        public string Password { get; set; } = null!;
     }
 
     [Route("[controller]")]
@@ -44,7 +44,7 @@ namespace WebApp1.Controllers
                 if (existingUser == null)
                 {
                     // We dont want to give to much information on why the request has failed for security reasons
-                    return BadRequest(new RegistrationResponse()
+                    return BadRequest(new CustomResponse()
                     {
                         Success = false,
                         Errors = new List<string>(){ "Invalid authentication request"  }
@@ -58,7 +58,7 @@ namespace WebApp1.Controllers
                 {
                     var jwtToken = GenerateJwtToken(existingUser);
 
-                    return Ok(new RegistrationResponse()
+                    return Ok(new CustomResponse()
                     {
                         Success = true,
                         Token = jwtToken
@@ -67,7 +67,7 @@ namespace WebApp1.Controllers
                 else
                 {
                     // We dont want to give to much information on why the request has failed for security reasons
-                    return BadRequest(new RegistrationResponse()
+                    return BadRequest(new CustomResponse()
                     {
                         Success = false,
                         Errors = new List<string>(){ "Invalid authentication request" }
@@ -75,7 +75,7 @@ namespace WebApp1.Controllers
                 }
             }
 
-            return BadRequest(new RegistrationResponse()
+            return BadRequest(new CustomResponse()
             {
                 Success = false,
                 Errors = new List<string>(){  "Invalid payload"  }

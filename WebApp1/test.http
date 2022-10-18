@@ -2,46 +2,58 @@
 https://localhost:7275/api/jwt/public
 
 
+### GetAllRoles
+https://localhost:7275/setup
+### CreateRole
+# POST https://localhost:7275/setup?roleName=Admin
+
+
 ###
 POST https://localhost:7275/users/RefreshToken
 content-type: application/json
 
 {
-    "Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6Ijg3YTBjZjNhLTZiOGItNDgwYi04ODc2LTg4Y2JiYjRiOGY3YyIsImVtYWlsIjoidXNlcjVAaW5mby52biIsImp0aSI6IjRmYmEzMGVhLThkYmItNGFkNS1iNDJlLTllNmYwYjM2ZGRkNCIsIm5iZiI6MTY2NjAwNDQ2NywiZXhwIjoxNjY2MDI2MDY3LCJpYXQiOjE2NjYwMDQ0Njd9.8X595ecfYM1epkkvhDqUiqI0y4tgIhEs6AuDidgSCOM",
-    "RefreshToken": "VN3C151F3I0SJFA3SSIDKF074805dc528-3708-484a-abd2-81929306e627"
+    "Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImJjNzM2OGI2LWI1NmItNDEwZS1hZTQzLTY3NmM3NmJjZTU0NCIsImVtYWlsIjoibWVtYmVyMUBpbmZvLnZuIiwianRpIjoiYWFhODRjODItZDg3ZS00Yzc3LTlhOTktZWNmMGJmNDMxMTIzIiwibmJmIjoxNjY2MDc4MDE0LCJleHAiOjE2NjYwOTI0MTQsImlhdCI6MTY2NjA3ODAxNH0.tNb1zEcuYaKl5cmhJHNgCiWZ_53jcjHkGChtCIax7yA",
+    "RefreshToken": "67EMYR7U71QN63O42VEPS2VWM778b8986-2830-43dc-92c5-7be936782edb"
 }
 
 
 ### ### ###
 https://localhost:7275/users
 ###
-https://localhost:7275/users/8e974a41-ffa8-4da4-a326-50b8d0f41252
+https://localhost:7275/users/admin1@info.vn
 ###
 POST https://localhost:7275/users
 content-type: application/json
 
 {
-    "Email": "user1@info.vn",
-    "Password": "user1",
-    "Role": "Member"
+    "Email": "admin2@info.vn",
+    "Password": "admin2",
+    "Role": "Admin"
 }
 ###
-PUT https://localhost:7275/users/4
+PUT https://localhost:7275/users
 content-type: application/json
 
 {
-    "Id": 5,
-    "FirstName": "user4 fnUp1",
-    "LastName": "user4 ln",
-    "Email": "user4@info.vn",
-    "Phone": "1004"
+    "Email": "admin2@info.vn",
+    "Password": "admin2_1",
+    "Role": "Member"
 }
 ###
 DELETE https://localhost:7275/users/8e974a41-ffa8-4da4-a326-50b8d0f41252
 # x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
 
 
-
 ### ### ###
-httpss://localhost:7275/testPollyCB
+https://localhost:7275/
 ###
+POST https://localhost:7275/users
+content-type: application/json
+Authorization: Bearer xxx
+
+{
+    "Email": "admin2@info.vn",
+    "Password": "admin2",
+    "Role": "Admin"
+}
