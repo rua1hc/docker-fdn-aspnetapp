@@ -24,21 +24,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
 
 //builder.Services
-//    .AddDefaultIdentity<IdentityUser>(
-//        opt => {
-//        opt.SignIn.RequireConfirmedAccount = false;
-
-//        opt.Password.RequireDigit = false;
-//        opt.Password.RequireLowercase = true;
-//        opt.Password.RequireUppercase = false;
-//        opt.Password.RequireNonAlphanumeric = false;
-//        opt.Password.RequiredLength = 5;
-//        opt.Password.RequiredUniqueChars = 0;
-//    })
-//    .AddEntityFrameworkStores<ApplicationDbContext>();
-//builder.Services
-//    .AddDefaultIdentity<ApplicationUser>(
-//        opt => opt.SignIn.RequireConfirmedAccount = true)
+//    .AddDefaultIdentity<ApplicationUser>(opt => opt.SignIn.RequireConfirmedAccount = false)
 //    .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services
     .AddIdentity<IdentityUser, IdentityRole>(
@@ -60,7 +46,6 @@ builder.Services
         opt => {
         opt.Cookie.HttpOnly = true;
         //options.Cookie.Expiration 
-
         opt.ExpireTimeSpan = TimeSpan.FromMinutes(15);
         opt.LoginPath = "/Identity/Account/Login";
         opt.LogoutPath = "/Identity/Account/Logout";

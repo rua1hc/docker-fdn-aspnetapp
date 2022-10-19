@@ -10,23 +10,23 @@ namespace WebApp1.Models.DTO.Responses
 
     class UserTokenMixedResponse
     {
-        public UserViewModel User { get; set; }
-        public IList<string> Roles { get; set; }
-        public IList<Claim> Claims { get; set; }
-        public string AccessToken { get; set; }
-        public string RefreshToken { get; set; }
+        public UserViewModel User { get; set; } = null!;
+        public IList<string> Roles { get; set; } = null!;
+        public IList<Claim> Claims { get; set; } = null!;
+        public string AccessToken { get; set; } = null!;
+        public string RefreshToken { get; set; } = null!;
     }
 
     public class TokenResponse
     {
-        public string AccessToken { get; set; }
-        public string RefreshToken { get; set; }
+        public string AccessToken { get; set; } = null!;
+        public string RefreshToken { get; set; } = null!;
     }
 
     public class UserResponse 
     {
-        public UserViewModel User { get; set; }
-        public IList<string> Roles { get; set; }
-        public IList<Claim> Claims { get; set; }
+        public UserViewModel User { get; set; } = null!;
+        public IList<string> Roles { get; set; } = null!;
+        public IList<Claim> Claims { get; set; } = null!;
     }
 }

@@ -17,18 +17,18 @@ POST https://localhost:7275/users/token
 content-type: application/json
 
 {
-    "Email": "member2@info.vn",
-    "Password": "member2"
+    "Email": "admin1@info.vn",
+    "Password": "admin1"
 }
 
 
 ### ### ### 
 POST https://localhost:7275/users/refreshToken
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6Ijg4YzQ3ZWM3LTA3ODItNDZlOC1iNzExLTViZjIzODQ5NGY4MSIsImVtYWlsIjoidXNlcjFAaW5mby52biIsImp0aSI6IjU2ZTJiODNkLTMzMjgtNGUzNS1hMGI0LThlNzU4YTUwYWYyOCIsIm5hbWVpZCI6Ijg4YzQ3ZWM3LTA3ODItNDZlOC1iNzExLTViZjIzODQ5NGY4MSIsIm5hbWUiOiJ1c2VyMUBpbmZvLnZuIiwibmJmIjoxNjY2MTY1ODE1LCJleHAiOjE2NjYyNTIyMTUsImlhdCI6MTY2NjE2NTgxNX0.j6EaTeDGbNNvy_dd7f6wm5YYOWCoyj1qGNLuwspR5gM
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImQzMzg4NThmLWM4MTAtNDQwZC05YzFhLTliMGJiZjU0ODEyYiIsImVtYWlsIjoiYWRtaW4xQGluZm8udm4iLCJqdGkiOiJmZmU0YTIyNy00MjQ4LTRhY2EtYWQwMi03ZjY2YzBkMjdmYjAiLCJuYW1laWQiOiJkMzM4ODU4Zi1jODEwLTQ0MGQtOWMxYS05YjBiYmY1NDgxMmIiLCJuYW1lIjoiYWRtaW4xQGluZm8udm4iLCJQZXJtaXNzaW9uIjoiQWRtaW4uTWFuYWdlLkZ1bGwiLCJyb2xlIjoiQWRtaW4iLCJuYmYiOjE2NjYxNzgyODYsImV4cCI6MTY2NjE4MTg4NiwiaWF0IjoxNjY2MTc4Mjg2fQ.YSnj-sPVmmVH3aEtpo0xRLZ_kIbMnEQirJRKzYQ9Keg
 
 {
-    "AccessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImQzMzg4NThmLWM4MTAtNDQwZC05YzFhLTliMGJiZjU0ODEyYiIsImVtYWlsIjoiYWRtaW4xQGluZm8udm4iLCJqdGkiOiIxZDRlMDFiNi01OWE4LTQ3YWUtYTI5Mi05ODllZjZlNzExYTUiLCJuYW1laWQiOiJkMzM4ODU4Zi1jODEwLTQ0MGQtOWMxYS05YjBiYmY1NDgxMmIiLCJuYW1lIjoiYWRtaW4xQGluZm8udm4iLCJQZXJtaXNzaW9uIjoiQWRtaW4uTWFuYWdlLkZ1bGwiLCJyb2xlIjoiQWRtaW4iLCJuYmYiOjE2NjYxNjUzNDIsImV4cCI6MTY2NjI1MTc0MiwiaWF0IjoxNjY2MTY1MzQyfQ.PnbxZ23tIYV4dJJAp7QSNcP2fSEdTMFf7NnHJQ3l5NE",
+    "AccessToken": "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJJZCI6ImU2OTFkNWU4LWNmOGItNDM5YS04Njk3LThkNWIwNzNjMmUwYyIsImVtYWlsIjoidXNlcjJAaW5mby52biIsImp0aSI6ImNlMWRmMzgxLWY3NWEtNGIxZS1iYmE4LWYyZTVmNjg4YjgyYSIsIm5hbWVpZCI6ImU2OTFkNWU4LWNmOGItNDM5YS04Njk3LThkNWIwNzNjMmUwYyIsIm5hbWUiOiJ1c2VyMkBpbmZvLnZuIiwiUGVybWlzc2lvbiI6Ik1lbWJlci5FbnJvbGxtZW50LkNvdXJzZSIsInJvbGUiOiJNZW1iZXIiLCJuYmYiOjE2NjYxNzY5MjksImV4cCI6MTY2NjE4MDUyOSwiaWF0IjoxNjY2MTc2OTI5fQ.GzkSIavke6zqYzxbDlZPH1Foa8TOwG-2_a0QHgbFklxZaVmiNbFeYl4Wcxak-dLP",
     "RefreshToken": "G88CPDXBJFTUT5ABTXM3T6HS3d6f23b22-c775-414c-be5f-4db603c93b56"
 }
 
@@ -36,7 +36,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6Ijg4YzQ3ZWM3L
 ### ### ### 
 https://localhost:7275/users
 ###
-https://localhost:7275/users/staff1@info.vn
+https://localhost:7275/users/user2@info.vn
 ###
 POST https://localhost:7275/users
 content-type: application/json

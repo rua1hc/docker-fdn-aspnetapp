@@ -14,7 +14,7 @@ namespace WebApp1.Data
 
         //JWT
         //public DbSet<CustomerUser> CustomUsers { get; set; } = null!;
-        public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
+        public virtual DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

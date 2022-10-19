@@ -138,16 +138,21 @@ namespace WebApp1.Controllers
                     var defaultClaim = new Claim("Permission", DefaultClaimConfig.Permission[user.Role]);
                     result = await _userManager.AddClaimAsync(createdUser, defaultClaim);
 
-                    var res = await GenerateJwtToken(newUser);
-                    //check result.Succeeded?
+                    var jwtGenerated = await GenerateJwtToken(newUser);
+                    if (!jwtGenerated.Success) return Ok(new UserResponse()
+                    {
+                        User = _mapper.Map<UserViewModel>(createdUser),
+                        Roles = new List<string> { user.Role },
+                        Claims = new List<Claim> { defaultClaim }
+                    });
 
                     return Ok(new UserTokenMixedResponse()
                     {
                         User = _mapper.Map<UserViewModel>(createdUser),
                         Roles = new List<string> { user.Role },
                         Claims = new List<Claim> { defaultClaim },
-                        AccessToken = res.AccessToken,
-                        RefreshToken = res.RefreshToken
+                        AccessToken = jwtGenerated.AccessToken,
+                        RefreshToken = jwtGenerated.RefreshToken
                     });
                 }
 
@@ -274,7 +279,7 @@ namespace WebApp1.Controllers
                 {
                     return BadRequest(new CustomResponse()
                     {
-                        Errors = new List<string>() { "Invalid tokens" },
+                        Errors = new List<string>() { "Invalid tokens!" },
                         Success = false
                     });
                 }
@@ -289,7 +294,7 @@ namespace WebApp1.Controllers
             });
         }
 
-        private async Task<AuthResult> VerifyToken(TokenRequestDto tokenRequest)
+        private async Task<AuthResult?> VerifyToken(TokenRequestDto tokenRequest)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
@@ -306,6 +311,11 @@ namespace WebApp1.Controllers
                     if (result == false)
                     {
                         return null;
+                        //return new AuthResult()
+                        //{
+                        //    Errors = new List<string>() { "Invalid tokens!" },
+                        //    Success = false
+                        //};
                     }
                 }
 
@@ -316,7 +326,7 @@ namespace WebApp1.Controllers
                 //{
                 //    return new AuthResult()
                 //    {
-                //        Errors = new List<string>() { "Cannot refresh this since the token has not expired" },
+                //        Errors = new List<string>() { "Cannot refresh since the token has not expired" },
                 //        Success = false
                 //    };
                 //}
@@ -326,7 +336,7 @@ namespace WebApp1.Controllers
                 {
                     return new AuthResult()
                     {
-                        Errors = new List<string>() { "refresh token doesnt exist" },
+                        Errors = new List<string>() { "Refresh token doesnt exist" },
                         Success = false
                     };
                 }
@@ -335,7 +345,7 @@ namespace WebApp1.Controllers
                 //{
                 //    return new AuthResult()
                 //    {
-                //        Errors = new List<string>() { "token has been used" },
+                //        Errors = new List<string>() { "Token has been used" },
                 //        Success = false
                 //    };
                 //}
@@ -344,18 +354,19 @@ namespace WebApp1.Controllers
                 {
                     return new AuthResult()
                     {
-                        Errors = new List<string>() { "token has been revoked" },
+                        Errors = new List<string>() { "Token has been revoked" },
                         Success = false
                     };
                 }
 
-                var jti = principal.Claims.SingleOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
-                // check the id that the recieved token has against the id saved in the db
-                if (storedRefreshToken.JwtId != jti)
+                var JtiClaim = principal.Claims.SingleOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti);
+                if (JtiClaim == null) return null;
+
+                if (storedRefreshToken.JwtId != JtiClaim.Value)
                 {
                     return new AuthResult()
                     {
-                        Errors = new List<string>() { "the token doenst mateched the saved token" },
+                        Errors = new List<string>() { "Token Id doenst matched" },
                         Success = false
                     };
                 }
@@ -388,7 +399,7 @@ namespace WebApp1.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(24),
+                Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
             };
 
