@@ -50,12 +50,9 @@
     <div class="row">
         <div class="col">
             <select class="form-control" name="type">
-                @foreach (var claimType in
-                ApplicationClaimTypes.AppClaimTypes)
+                @foreach (var role in DefaultClaimConfig.Permission)
                 {
-                    <option value="@claimType">
-                        @claimType
-                    </option>
+                    <option value="@role.Key"> @role.Value </option>
                 }
             </select>
 

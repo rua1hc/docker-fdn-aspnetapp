@@ -6,7 +6,7 @@ using WebApp1.Data;
 
 namespace WebApp1.Controllers
 {
-    [Route("[controller]")] 
+    [Route("[controller]")]
     [ApiController]
     public class SetupController : ControllerBase
     {
@@ -35,7 +35,6 @@ namespace WebApp1.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateRole(string roleName)
         {
             var roleExist = await _roleManager.RoleExistsAsync(roleName);

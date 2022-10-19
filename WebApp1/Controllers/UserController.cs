@@ -18,8 +18,6 @@ using WebApp1.Models.DTO.Responses;
 namespace WebApp1.Controllers
 {
     //todo1 add login
-    //todo2 add cors
-    //Header Autho..:bearer jwt
     //[author(authSchem = jwtBeardef.authSchem, Role = "Admin")]
     [Route("[controller]")]
     [ApiController]
@@ -46,6 +44,49 @@ namespace WebApp1.Controllers
             _apiDbContext = apiDbContext;
         }
 
+        [HttpPost]
+        [Route("Token")]
+        public async Task<IActionResult> Login(UserLoginReqDto user)
+        {
+            if (ModelState.IsValid)
+            {
+                var existingUser = await _userManager.FindByEmailAsync(user.Email);
+                if (existingUser == null) return BadRequest(new CustomResponse()
+                {
+                    Success = false,
+                    Errors = new List<string>() { "Invalid authentication request" }
+                });
+
+                var isCorrect = await _userManager.CheckPasswordAsync(existingUser, user.Password);
+                if (isCorrect)
+                {
+                    var storedRefreshToken = await _apiDbContext.RefreshTokens.FirstOrDefaultAsync(x => x.UserId == existingUser.Id);
+                    //if (storedRefreshToken == null)
+                    var result = await GenerateJwtToken(existingUser, storedRefreshToken);
+
+                    return Ok(new TokenResponse()
+                    {
+                        AccessToken = result.AccessToken,
+                        RefreshToken = result.RefreshToken
+                    });
+                }
+                else
+                {
+                    return BadRequest(new CustomResponse()
+                    {
+                        Success = false,
+                        Errors = new List<string>() { "Invalid authentication request" }
+                    });
+                }
+            }
+
+            return BadRequest(new CustomResponse()
+            {
+                Success = false,
+                Errors = new List<string>() { "Invalid payload" }
+            });
+        }
+
         // GET: Users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserViewModel>>> GetUsers()
@@ -60,7 +101,7 @@ namespace WebApp1.Controllers
         public async Task<ActionResult> GetUser(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user == null) return NotFound() ;
+            if (user == null) return NotFound();
 
             var roles = await _userManager.GetRolesAsync(user);
             var claims = await _userManager.GetClaimsAsync(user);
@@ -75,7 +116,7 @@ namespace WebApp1.Controllers
 
         // POST: Users
         [HttpPost]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "AdminRole")]
         public async Task<ActionResult<IdentityUser>> AddUser(UserRegisterReqDto user)
         {
             if (ModelState.IsValid)
@@ -91,21 +132,23 @@ namespace WebApp1.Controllers
                 var isCreated = await _userManager.CreateAsync(newUser, user.Password);
                 if (isCreated.Succeeded)
                 {
-                    //var jwtToken = GenerateJwtToken(newUser);
-                    //return Ok(new RegistrationResponse()
-                    //        {
-                    //            Success = true,
-                    //            Token = jwtToken
-                    //        });
-
                     var createdUser = await _userManager.FindByEmailAsync(user.Email);
                     var result = await _userManager.AddToRoleAsync(createdUser, user.Role);
 
-                    var defaultClaim = new Claim("ClaimPermission", DefaultClaimConfig.Permission[user.Role]);
+                    var defaultClaim = new Claim("Permission", DefaultClaimConfig.Permission[user.Role]);
                     result = await _userManager.AddClaimAsync(createdUser, defaultClaim);
 
+                    var res = await GenerateJwtToken(newUser);
                     //check result.Succeeded?
-                    return Ok(await GenerateJwtToken(newUser));
+
+                    return Ok(new UserTokenMixedResponse()
+                    {
+                        User = _mapper.Map<UserViewModel>(createdUser),
+                        Roles = new List<string> { user.Role },
+                        Claims = new List<Claim> { defaultClaim },
+                        AccessToken = res.AccessToken,
+                        RefreshToken = res.RefreshToken
+                    });
                 }
 
                 return new JsonResult(new CustomResponse()
@@ -123,14 +166,14 @@ namespace WebApp1.Controllers
             });
         }
 
-        // PUT: Users/2
-        [HttpPut("{id}")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateUser(UserRegisterReqDto user)
+        // PUT: Users/email
+        [HttpPut("{email}")]
+        [Authorize(Policy = "AdminRole")]
+        public async Task<IActionResult> UpdateUser(string email, UserRegisterReqDto user)
         {
-            //if (id != User.Id) return BadRequest();
+            if (email != user.Email) return BadRequest();
 
-            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+            var existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser == null) return NotFound();
 
             existingUser.Email = user.Email;
@@ -141,11 +184,11 @@ namespace WebApp1.Controllers
         }
 
         // DELETE: Users/3
-        [HttpDelete("{Id}")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> DeleteUser(string Id)
+        [HttpDelete("{email}")]
+        [Authorize(Policy = "AdminRole")]
+        public async Task<IActionResult> DeleteUser(string email)
         {
-            var existingUser = await _userManager.FindByIdAsync(Id);
+            var existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser == null) return NotFound();
 
             IdentityResult result = await _userManager.DeleteAsync(existingUser);
@@ -159,29 +202,69 @@ namespace WebApp1.Controllers
             { StatusCode = 500 };
         }
 
+
         //////
         [HttpPut]
-        [Route("users/{Id}/roles")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateUserRole(string Id, string roles)
+        [Route("{email}/roles")]
+        public async Task<IActionResult> UpdateUserRole(string email, AddRoleReqDto roleReq)
         {
-            return Ok();
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            if (existingUser == null) return NotFound();
+
+            var existingRole = await _roleManager.FindByNameAsync(roleReq.Role);
+            if (existingRole == null) return NotFound();
+
+            var result = await _userManager.AddToRoleAsync(existingUser, roleReq.Role);
+
+            return result.Succeeded ? Ok() : BadRequest(new { error = result.Errors });
         }
 
         [HttpPut]
-        [Route("users/{Id}/claims")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateUserClaim(string Id, string claims)
+        [Route("{email}/claims")]
+        //[Authorize(Policy = "AdminRole")]
+        public async Task<IActionResult> UpdateUserClaim(string email, string claims)
         {
             return Ok();
+
+            //var createdUser = await _userManager.FindByEmailAsync(email);
+            //var defaultClaim = new Claim("Permission", DefaultClaimConfig.Permission[user.Role]);
+            //var result = await _userManager.AddClaimAsync(createdUser, defaultClaim);
         }
 
+
+        [HttpPost]
+        [Route("revoke")]
+        public async Task<AuthResult> RevokeTokenHandler(TokenRequestDto tokenRequest)
+        {
+            if (ModelState.IsValid)
+            {
+                var storedRefreshToken = await _apiDbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == tokenRequest.RefreshToken);
+                if (storedRefreshToken == null) return (new AuthResult()
+                {
+                    Errors = new List<string>() { "Refresh token doesnt exist" },
+                    Success = false
+                });
+
+                storedRefreshToken.IsRevoked = true;
+                _apiDbContext.RefreshTokens.Update(storedRefreshToken);
+                await _apiDbContext.SaveChangesAsync();
+
+                return (new CustomResponse() { Success = true });
+            }
+
+            return (new CustomResponse()
+            {
+                Success = false,
+                Errors = new List<string>() { "Invalid payload" }
+            });
+        }
 
 
         //////
         [HttpPost]
         [Route("RefreshToken")]
-        public async Task<IActionResult> RefreshToken([FromBody] TokenRequest tokenRequest)
+        [Authorize(Policy = "AdminRole")]
+        public async Task<IActionResult> RefreshTokenHandler(TokenRequestDto tokenRequest)
         {
             if (ModelState.IsValid)
             {
@@ -206,17 +289,19 @@ namespace WebApp1.Controllers
             });
         }
 
-        private async Task<AuthResult> VerifyToken(TokenRequest tokenRequest)
+        private async Task<AuthResult> VerifyToken(TokenRequestDto tokenRequest)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
             try
             {
-                var principal = jwtTokenHandler.ValidateToken(tokenRequest.Token, _tokenValidationParameters, out var validatedToken);
+                var principal = jwtTokenHandler.ValidateToken(tokenRequest.AccessToken,
+                                    _tokenValidationParameters, out var validatedToken);
 
                 if (validatedToken is JwtSecurityToken jwtSecurityToken)
                 {
-                    var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase);
+                    var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                                    StringComparison.InvariantCultureIgnoreCase);
 
                     if (result == false)
                     {
@@ -224,16 +309,17 @@ namespace WebApp1.Controllers
                     }
                 }
 
-                var utcExpiryDate = long.Parse(principal.Claims.First(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
-                var expDate = UnixTimeStampToDateTime(utcExpiryDate);
-                if (expDate > DateTime.UtcNow)
-                {
-                    return new AuthResult()
-                    {
-                        Errors = new List<string>() { "Cannot refresh this since the token has not expired" },
-                        Success = false
-                    };
-                }
+                //cmt out to forbid renew access token before exp. time
+                //var utcExpiryDate = long.Parse(principal.Claims.First(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+                //var expDate = UnixTimeStampToDateTime(utcExpiryDate);
+                //if (expDate > DateTime.UtcNow)
+                //{
+                //    return new AuthResult()
+                //    {
+                //        Errors = new List<string>() { "Cannot refresh this since the token has not expired" },
+                //        Success = false
+                //    };
+                //}
 
                 var storedRefreshToken = await _apiDbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == tokenRequest.RefreshToken);
                 if (storedRefreshToken == null)
@@ -245,14 +331,14 @@ namespace WebApp1.Controllers
                     };
                 }
 
-                if (storedRefreshToken.IsUsed)
-                {
-                    return new AuthResult()
-                    {
-                        Errors = new List<string>() { "token has been used" },
-                        Success = false
-                    };
-                }
+                //if (storedRefreshToken.IsUsed)
+                //{
+                //    return new AuthResult()
+                //    {
+                //        Errors = new List<string>() { "token has been used" },
+                //        Success = false
+                //    };
+                //}
 
                 if (storedRefreshToken.IsRevoked)
                 {
@@ -278,7 +364,7 @@ namespace WebApp1.Controllers
                 {
                     return new AuthResult()
                     {
-                        Errors = new List<string>() { "token has expired, user needs to relogin" },
+                        Errors = new List<string>() { "Token expired, pls. relogin" },
                         Success = false
                     };
                 }
@@ -319,7 +405,7 @@ namespace WebApp1.Controllers
 
                 return new AuthResult()
                 {
-                    Token = jwtToken,
+                    AccessToken = jwtToken,
                     Success = true,
                     RefreshToken = storedRefreshToken.Token
                 };
@@ -342,7 +428,7 @@ namespace WebApp1.Controllers
 
                 return new AuthResult()
                 {
-                    Token = jwtToken,
+                    AccessToken = jwtToken,
                     Success = true,
                     RefreshToken = refreshToken.Token
                 };

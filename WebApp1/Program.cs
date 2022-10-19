@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WebApp1.Config;
 using WebApp1.Data;
+using WebApp1.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -96,11 +98,14 @@ builder.Services
 builder.Services
     .AddAuthorization(
         opt => {
-        opt.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+        opt.AddPolicy("AdminRole", policy => policy.RequireRole("Admin"));
+        opt.AddPolicy("AdminPermission", policy => policy.RequireClaim("Permission", "Admin.Manage.Full"));
+        opt.AddPolicy("StaffPermission", policy => policy.RequireClaim("Permission", "Staff.Assigment.Class"));
+        opt.AddPolicy("MemberPermission", policy => policy.RequireClaim("Permission", "Member.Enrollment.Course"));
     });
 
 //3.
-//builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddRazorPages();
 
