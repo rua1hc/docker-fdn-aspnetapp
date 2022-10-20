@@ -1,7 +1,7 @@
 ###
-http://localhost:7131/api/contact/
+https://localhost:7131/api/user/
 ###
-POST http://localhost:7131/api/contact
+POST https://localhost:7131/api/user
 content-type: application/json
 
 {
@@ -11,7 +11,7 @@ content-type: application/json
     "Phone": "1005"
 }
 ###
-PUT http://localhost:7131/api/contact/4
+PUT https://localhost:7131/api/user/4
 content-type: application/json
 
 {
@@ -22,12 +22,11 @@ content-type: application/json
     "Phone": "1004"
 }
 ###
-DELETE http://localhost:7131/api/contact/99
+DELETE https://localhost:7131/api/user/99
 # x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
 
 
-
 ### ### ###
-https://localhost:7131/testPollyCB
+httpss://localhost:7131/testPollyCB
 ###
 

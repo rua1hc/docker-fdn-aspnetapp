@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 //dotnet - ef migrations script --output initDb.sql --context DotNetTraining --idempotent
-public class DotNetTraining : DbContext
+public class Net_Member : DbContext
 {
-    public DotNetTraining(DbContextOptions<DotNetTraining> options)
+    public Net_Member(DbContextOptions<Net_Member> options)
             : base(options) { }
 
-    public virtual DbSet<Contact> Contacts { get; set; } = null!;
+    public virtual DbSet<User> Users { get; set; } = null!;
 
     //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     //{
@@ -17,20 +17,17 @@ public class DotNetTraining : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Contact>(entity =>
+        //modelBuilder.Entity<User>().HasKey(e => e.Id);
+        modelBuilder.Entity<User>(entity =>
         {
             entity.HasIndex(e => e.Email).IsUnique();
 
-            entity.Property(e => e.FirstName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.UserName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.FirstName).HasMaxLength(255);
             entity.Property(e => e.LastName).HasMaxLength(255);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(255);
-
-            //Id(int, primaryKey, auto increment)
-            //FirstName(varchar(255), not null)
-            //LastName(varchar(255), null)
-            //Email(varchar(255), not null, unique)
-            //Phone(varchar(255), null)
+            entity.Property(e => e.Balance).HasDefaultValue(0);
         });
     }
 }

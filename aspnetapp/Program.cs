@@ -12,13 +12,11 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    // Add services to the container.
     builder.Services.AddControllersWithViews();
 
     //1.
     builder.Host.UseSerilog((ctx, lc) => lc
         .WriteTo.Console()
-        //.WriteTo.Seq("http://seq:5341")
         .ReadFrom.Configuration(ctx.Configuration));
 
     //2.DI
@@ -27,10 +25,11 @@ try
     //builder.Services.AddSingleton<IOperationSingleton, Operation>();
 
     //3.
-    builder.Services.AddDbContext<DotNetTraining>(options =>
+    builder.Services.AddDbContext<Net_Member>(options =>
     {
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        options.UseSqlServer(connectionString);
+        //options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
     });
 
     //4.
