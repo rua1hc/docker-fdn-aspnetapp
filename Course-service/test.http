@@ -1,0 +1,32 @@
+###
+https://localhost:7131/api/user/
+###
+POST https://localhost:7131/api/user
+content-type: application/json
+
+{
+    "FirstName": "user5 fn",
+    "LastName": "user5 ln",
+    "Email": "user5@info.vn",
+    "Phone": "1005"
+}
+###
+PUT https://localhost:7131/api/user/4
+content-type: application/json
+
+{
+    "Id": 5,
+    "FirstName": "user4 fnUp1",
+    "LastName": "user4 ln",
+    "Email": "user4@info.vn",
+    "Phone": "1004"
+}
+###
+DELETE https://localhost:7131/api/user/99
+# x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+
+
+### ### ###
+httpss://localhost:7131/testPollyCB
+###
+
