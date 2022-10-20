@@ -56,18 +56,18 @@ namespace ServiceStub
 					continue;
 				}
 
-				if (!Enum.TryParse<ReturnMode>(args[1], ignoreCase: true, out ReturnMode status))
+				if (!Enum.TryParse<GeneralReturnMode>(args[1], ignoreCase: true, out GeneralReturnMode status))
 				{
 					Log.Information("Invalid status value");
 					continue;
 				}
 
 				RandomNumberController.ReturnMode = status;
-				HealthStatusController.Status = status == ReturnMode.ok200 ? HealthStatus.Healthy : HealthStatus.Unhealthy;
+				HealthStatusController.Status = status == GeneralReturnMode.ok200 ? HealthStatus.Healthy : HealthStatus.Unhealthy;
 			}
 		}
 
-		public enum ReturnMode
+		public enum GeneralReturnMode
 		{
 			ok200,
 			nf404

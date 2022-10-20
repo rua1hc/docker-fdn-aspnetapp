@@ -90,7 +90,9 @@ builder.Services
     });
 
 //3.
-builder.Services.AddTransient<IEmailSender, EmailSender>();
+var emailConfig = builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
+builder.Services.AddSingleton(emailConfig);
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 builder.Services.AddRazorPages();
 

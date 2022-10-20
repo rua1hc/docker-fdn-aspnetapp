@@ -36,7 +36,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImQzMzg4NThmL
 ### ### ### 
 https://localhost:7275/users
 ###
-https://localhost:7275/users/user2@info.vn
+https://localhost:7275/users/staff1@info.vn
 ###
 POST https://localhost:7275/users
 content-type: application/json
@@ -57,6 +57,15 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6Ijg4YzQ3ZWM3L
     "Password": "admin2_1",
     "Role": "Member"
 }
+
+###
+PUT https://localhost:7275/users/staff1@info.vn/claims
+content-type: application/json
+
+{
+    "C_test-only": "value-1, value-2"
+}
+
 ###
 PUT https://localhost:7275/users/staff1@info.vn/roles
 content-type: application/json
@@ -64,6 +73,7 @@ content-type: application/json
 {
     "Role": "Member"
 }
+
 ###
 DELETE https://localhost:7275/users/8e974a41-ffa8-4da4-a326-50b8d0f41252
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6Ijg4YzQ3ZWM3LTA3ODItNDZlOC1iNzExLTViZjIzODQ5NGY4MSIsImVtYWlsIjoidXNlcjFAaW5mby52biIsImp0aSI6IjJmOTE4YmEwLTQ2ZTAtNDA5OC05ODYyLTY0ODMzYmJjZGI5NiIsIm5hbWVpZCI6Ijg4YzQ3ZWM3LTA3ODItNDZlOC1iNzExLTViZjIzODQ5NGY4MSIsIm5hbWUiOiJ1c2VyMUBpbmZvLnZuIiwibmJmIjoxNjY2MTY1OTYyLCJleHAiOjE2NjYyNTIzNjIsImlhdCI6MTY2NjE2NTk2Mn0.ceRhYrEVBbhiToXJE0XFWGCSrcATKI5uo4NUs590DVY

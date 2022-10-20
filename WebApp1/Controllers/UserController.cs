@@ -227,15 +227,22 @@ namespace WebApp1.Controllers
         [HttpPut]
         [Route("{email}/claims")]
         //[Authorize(Policy = "AdminRole")]
-        public async Task<IActionResult> UpdateUserClaim(string email, string claims)
+        public async Task<IActionResult> UpdateUserClaim(string email,[FromBody] Dictionary<string, string> claims)
         {
-            return Ok();
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            if (existingUser == null) return NotFound();
 
-            //var createdUser = await _userManager.FindByEmailAsync(email);
-            //var defaultClaim = new Claim("Permission", DefaultClaimConfig.Permission[user.Role]);
-            //var result = await _userManager.AddClaimAsync(createdUser, defaultClaim);
+            //var existingClaims = await _userManager.GetClaimsAsync(existingUser);
+
+            var claimList = new List<Claim>();
+            foreach (var claim in claims)
+            {
+                claimList.Add(new Claim(claim.Key, claim.Value));
+            }
+            var result =await _userManager.AddClaimsAsync(existingUser, claimList);
+
+            return result.Succeeded ? Ok() : BadRequest(new { error = result.Errors });
         }
-
 
         [HttpPost]
         [Route("revoke")]
@@ -308,15 +315,7 @@ namespace WebApp1.Controllers
                     var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
                                     StringComparison.InvariantCultureIgnoreCase);
 
-                    if (result == false)
-                    {
-                        return null;
-                        //return new AuthResult()
-                        //{
-                        //    Errors = new List<string>() { "Invalid tokens!" },
-                        //    Success = false
-                        //};
-                    }
+                    if (result == false) return null;
                 }
 
                 //cmt out to forbid renew access token before exp. time
@@ -385,6 +384,7 @@ namespace WebApp1.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Invalid tokens: {ex.Message}");
                 return null;
             }
         }

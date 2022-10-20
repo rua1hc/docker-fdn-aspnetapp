@@ -9,7 +9,7 @@ namespace ServiceStub.Controllers
     [Route("[controller]")]
     public class RandomNumberController : ControllerBase
     {
-        public static ReturnMode ReturnMode { get; set; } = ReturnMode.ok200;
+        public static GeneralReturnMode ReturnMode { get; set; } = GeneralReturnMode.ok200;
 
         [HttpGet()]
         public ActionResult<string> Get()
@@ -18,11 +18,11 @@ namespace ServiceStub.Controllers
 
             foreach (var header in Request.Headers)
             {
-                Log.Information("{headerKey}={headerValue}", header.Key, header.Value);
+                Log.Information("={headerKey}={headerValue}", header.Key, header.Value);
             }
             Response.Headers.Add("X-Response-ID", "service-2");
 
-            if (ReturnMode == ReturnMode.ok200)
+            if (ReturnMode == GeneralReturnMode.ok200)
                 return Ok(new Random().Next());
 
             return NotFound();
