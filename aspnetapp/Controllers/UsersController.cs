@@ -5,11 +5,11 @@ namespace aspnetapp.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserController : ControllerBase
+public class UsersController : ControllerBase
 {
     private readonly Net_Member _context;
 
-    public UserController(Net_Member context)
+    public UsersController(Net_Member context)
     {
         _context = context;
     }

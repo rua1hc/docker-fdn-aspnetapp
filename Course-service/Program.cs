@@ -1,5 +1,6 @@
 using Course_service.Models;
 using Microsoft.EntityFrameworkCore;
+//using Course_service.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,5 +27,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+//app.MapCourseEndpoints();
 
 app.Run();

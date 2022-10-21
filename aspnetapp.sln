@@ -17,7 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStub", "ServiceStub\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityJwt", "WebApp1\IdentityJwt.csproj", "{B19E1320-8976-45E4-800B-E84F9D7FC5CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Course-service", "Course-service\Course-service.csproj", "{8D3B237E-DEF6-4495-9464-F52A77B6625F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Course-service", "Course-service\Course-service.csproj", "{8D3B237E-DEF6-4495-9464-F52A77B6625F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5FDCC1ED-9F59-47ED-969D-5E463CDD8D52} = {5FDCC1ED-9F59-47ED-969D-5E463CDD8D52}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
