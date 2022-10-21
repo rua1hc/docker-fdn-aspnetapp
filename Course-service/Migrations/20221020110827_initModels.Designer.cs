@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Course_service.Migrations
 {
-    [DbContext(typeof(NetCourse))]
+    [DbContext(typeof(NetCourseDbContext))]
     [Migration("20221020110827_initModels")]
     partial class initModels
     {

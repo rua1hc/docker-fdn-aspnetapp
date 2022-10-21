@@ -24,9 +24,9 @@ namespace WebApp1.Areas.Identity.Pages.Admin
         public UserManager<IdentityUser> UserManager { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string Id { get; set; }
+        public string Id { get; set; } = null!;
 
-        public IEnumerable<Claim> Claims { get; set; }
+        public IEnumerable<Claim>? Claims { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -71,7 +71,7 @@ namespace WebApp1.Areas.Identity.Pages.Admin
             {
                 var claimNew = new Claim(type, value);
                 var claimOld = new Claim(type, oldValue);
-                var result = await UserManager.ReplaceClaimAsync(user, claimOld, claimNew);
+                await UserManager.ReplaceClaimAsync(user, claimOld, claimNew);
             }
             Claims = await UserManager.GetClaimsAsync(user);
             return RedirectToPage();
@@ -84,7 +84,7 @@ namespace WebApp1.Areas.Identity.Pages.Admin
             if (ModelState.IsValid)
             {
                 var claim = new Claim(type, value);
-                var result = await UserManager.RemoveClaimAsync(user, claim);
+                await UserManager.RemoveClaimAsync(user, claim);
             }
             Claims = await UserManager.GetClaimsAsync(user);
             return RedirectToPage();

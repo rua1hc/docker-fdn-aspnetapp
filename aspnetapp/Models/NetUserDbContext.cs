@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 //dotnet - ef migrations script --output initDb.sql --context DotNetTraining --idempotent
-public class Net_Member : DbContext
+public class NetUserDbContext : DbContext
 {
-    public Net_Member(DbContextOptions<Net_Member> options)
+    public NetUserDbContext(DbContextOptions<NetUserDbContext> options)
             : base(options) { }
 
     public virtual DbSet<User> Users { get; set; } = null!;

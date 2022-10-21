@@ -13,9 +13,9 @@ namespace Course_service.Controllers
     [ApiController]
     public class CoursesController : ControllerBase
     {
-        private readonly NetCourse _context;
+        private readonly NetCourseDbContext _context;
 
-        public CoursesController(NetCourse context)
+        public CoursesController(NetCourseDbContext context)
         {
             _context = context;
         }

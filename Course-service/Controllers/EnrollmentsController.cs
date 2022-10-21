@@ -13,9 +13,9 @@ namespace Course_service.Controllers
     [ApiController]
     public class EnrollmentsController : ControllerBase
     {
-        private readonly NetCourse _context;
+        private readonly NetCourseDbContext _context;
 
-        public EnrollmentsController(NetCourse context)
+        public EnrollmentsController(NetCourseDbContext context)
         {
             _context = context;
         }

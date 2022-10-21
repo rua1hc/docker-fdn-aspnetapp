@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Userservice.Migrations
 {
-    [DbContext(typeof(Net_Member))]
+    [DbContext(typeof(NetUserDbContext))]
     partial class Net_MemberModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

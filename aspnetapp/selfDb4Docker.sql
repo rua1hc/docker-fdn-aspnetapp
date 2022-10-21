@@ -1,3 +1,5 @@
+-- dotnet - ef migrations script --output autoDb4Docker.sql --context DotNetTraining --idempotent
+
 CREATE DATABASE IF NOT EXISTS `DotNetTraining`;
 USE `DotNetTraining`;
 

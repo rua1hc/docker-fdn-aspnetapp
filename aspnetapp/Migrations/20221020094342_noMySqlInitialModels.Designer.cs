@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Userservice.Migrations
 {
-    [DbContext(typeof(Net_Member))]
+    [DbContext(typeof(NetUserDbContext))]
     [Migration("20221020094342_noMySqlInitialModels")]
     partial class noMySqlInitialModels
     {

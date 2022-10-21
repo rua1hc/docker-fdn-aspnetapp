@@ -7,9 +7,9 @@ namespace aspnetapp.Controllers;
 [ApiController]
 public class UsersController : ControllerBase
 {
-    private readonly Net_Member _context;
+    private readonly NetUserDbContext _context;
 
-    public UsersController(Net_Member context)
+    public UsersController(NetUserDbContext context)
     {
         _context = context;
     }

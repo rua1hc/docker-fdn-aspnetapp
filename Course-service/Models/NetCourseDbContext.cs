@@ -1,13 +1,11 @@
-﻿//dotnet - ef migrations script --output migrateDb4Docker.sql --context NetCourse --idempotent
-
+﻿
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 
 namespace Course_service.Models
 {
-    public class NetCourse : DbContext
+    public class NetCourseDbContext : DbContext
     {
-        public NetCourse(DbContextOptions<NetCourse> options) : base(options) { }
+        public NetCourseDbContext(DbContextOptions<NetCourseDbContext> options) : base(options) { }
 
         public virtual DbSet<Course> Courses { get; set; } = null!;
         public virtual DbSet<Enrollment> Enrollments { get; set; } = null!;

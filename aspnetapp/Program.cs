@@ -25,7 +25,7 @@ try
     //builder.Services.AddSingleton<IOperationSingleton, Operation>();
 
     //3.
-    builder.Services.AddDbContext<Net_Member>(options =>
+    builder.Services.AddDbContext<NetUserDbContext>(options =>
     {
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
         options.UseSqlServer(connectionString);

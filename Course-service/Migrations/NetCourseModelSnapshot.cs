@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Course_service.Migrations
 {
-    [DbContext(typeof(NetCourse))]
+    [DbContext(typeof(NetCourseDbContext))]
     partial class NetCourseModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
