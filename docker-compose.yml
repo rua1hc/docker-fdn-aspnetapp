@@ -1,62 +1,43 @@
 version: "3.9"
 
 services:
-    app:
-        build:
-            context: .
-            dockerfile: aspnetapp/Dockerfile
-        depends_on:
-            - mysql
-            - seq
-        environment:
-            ASPNETCORE_ENVIRONMENT: Development
-            # SEQ_SERVER_URL: http://seq:5341
-        volumes:
-            - ./aspnetapp:/src
+    rabbitmq:
+        image: masstransit/rabbitmq
         ports:
-            - 7131:80
-            - 5011:443
-        # working_dir: /src/aspnetapp
-        # command: "dotnet aspnetapp.dll"
-    # stub:
+            - 15672:15672
+            - 5672:5672
+    # app:
     #     build:
     #         context: .
-    #         dockerfile: ServiceStub/Dockerfile
+    #         dockerfile: aspnetapp/Dockerfile
     #     # depends_on:
+    #     #     - mysql
     #     #     - seq
     #     environment:
     #         ASPNETCORE_ENVIRONMENT: Development
     #         # SEQ_SERVER_URL: http://seq:5341
-    #     volumes:
-    #         - ./ServiceStub:/src
+    #     ports:
+    #         - 7131:80
+    #         - 5011:443
+    # stub:
+    #     build:
+    #         context: .
+    #         dockerfile: ServiceStub/Dockerfile
+    #     depends_on:
+    #         - seq
+    #     environment:
+    #         ASPNETCORE_ENVIRONMENT: Development
+    #         # SEQ_SERVER_URL: http://seq:5341
     #     ports:
     #         - 12345:80
-    mysql:
-        image: mysql:5.7
-        environment:
-            MYSQL_DATABASE: DotNetTraining
-            MYSQL_ROOT_PASSWORD: 240690
-        volumes:
-            - ./dbSetup.sql:/docker-entrypoint-initdb.d/dbSetup.sql
-            - vdata:/lib/mysql
-        # ports:
-        #     - 3306:3306
-    seq:
-        image: datalust/seq
-        restart: unless-stopped
-        environment:
-            - ACCEPT_EULA=Y
-        volumes:
-            - vdata:/lib/seq
-        ports:
-            - 5342:5341
-            - 8080:80
-volumes:
-    vdata:
-# networks:
-#     app_network:
-#       driver: bridge
-
+    # mysql:
+    #     image: mysql:5.7
+    #     environment:
+    #         MYSQL_DATABASE: DotNetTraining
+    #         MYSQL_ROOT_PASSWORD: 240690
+    #     volumes:
+    #         - ./dbSetup.sql:/docker-entrypoint-initdb.d/dbSetup.sql
+    #         - vdata:/var/lib/mysql
     # mssql:
     #     image: mcr.microsoft.com/mssql/server:2022-latest
     #     environment:
@@ -65,5 +46,15 @@ volumes:
     #         MSSQL_PID: Express
     #     ports:
     #         - 1433:1433
+    # seq:
+    #     image: datalust/seq
+    #     restart: unless-stopped
+    #     environment:
+    #         - ACCEPT_EULA=Y
     #     volumes:
-    #         - vdata:/data/mssql
+    #         - vdata:/data
+    #     ports:
+    #         - 8080:80
+    #         - 5342:5341
+# volumes:
+#     vdata:
