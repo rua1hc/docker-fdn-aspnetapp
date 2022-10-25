@@ -6,30 +6,40 @@ services:
         ports:
             - 15672:15672
             - 5672:5672
+	course-service:
+		image: ${DOCKER_REGISTRY-}Course-service
+		build:
+			context: .
+			dockerfile: Course-service/Dockerfile
+		ports:
+            - 7048:80
+            - 7047:443
+		depends_on:
+            - rabbitmq
     # app:
     #     build:
     #         context: .
     #         dockerfile: aspnetapp/Dockerfile
-    #     # depends_on:
-    #     #     - mysql
-    #     #     - seq
     #     environment:
     #         ASPNETCORE_ENVIRONMENT: Development
     #         # SEQ_SERVER_URL: http://seq:5341
     #     ports:
     #         - 7131:80
     #         - 5011:443
+    #     # depends_on:
+    #     #     - mysql
+    #     #     - seq
     # stub:
     #     build:
     #         context: .
     #         dockerfile: ServiceStub/Dockerfile
-    #     depends_on:
-    #         - seq
     #     environment:
     #         ASPNETCORE_ENVIRONMENT: Development
     #         # SEQ_SERVER_URL: http://seq:5341
     #     ports:
     #         - 12345:80
+    #     # depends_on:
+    #     #     - seq
     # mysql:
     #     image: mysql:5.7
     #     environment:

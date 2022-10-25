@@ -6,6 +6,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Course_service.Models;
+using MassTransit;
+using MassTransit.Transports;
+using Newtonsoft.Json.Linq;
+using Course_service.Contracts;
+using Microsoft.Extensions.Configuration.UserSecrets;
+using Course_service.Models.DTOs;
 
 namespace Course_service.Controllers
 {
@@ -14,10 +20,13 @@ namespace Course_service.Controllers
     public class EnrollmentsController : ControllerBase
     {
         private readonly NetCourseDbContext _context;
+        readonly IPublishEndpoint _publishEndpoint;
 
-        public EnrollmentsController(NetCourseDbContext context)
+        public EnrollmentsController(NetCourseDbContext context,
+                                    IPublishEndpoint publishEndpoint)
         {
             _context = context;
+            _publishEndpoint = publishEndpoint;
         }
 
         // GET: api/Enrollments
@@ -75,12 +84,23 @@ namespace Course_service.Controllers
         // POST: api/Enrollments
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Enrollment>> PostEnrollment(Enrollment enrollment)
+        public async Task<ActionResult> PostEnrollment(EnrollmentDto enrollment)
         {
-            _context.Enrollments.Add(enrollment);
-            await _context.SaveChangesAsync();
+            var newEnrollment = new
+            {
+                Id = enrollment.Id,
+                UserId = enrollment.UserId,
+                CourseId = enrollment.CourseId,
+                EnrolledDate = DateTime.Now,
+            };
 
-            return CreatedAtAction("GetEnrollment", new { id = enrollment.Id }, enrollment);
+            await _publishEndpoint.Publish<CourseEnrolled>(newEnrollment);
+            return Ok(newEnrollment);
+
+            //_context.Enrollments.Add(enrollment);
+            //await _context.SaveChangesAsync();
+
+            //return CreatedAtAction("GetEnrollment", new { id = enrollment.Id }, enrollment);
         }
 
         // DELETE: api/Enrollments/5
