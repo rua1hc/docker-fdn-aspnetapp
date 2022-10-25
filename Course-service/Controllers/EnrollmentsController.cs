@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Course_service.Models;
 using MassTransit;
-using MassTransit.Transports;
-using Newtonsoft.Json.Linq;
-using Course_service.Contracts;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using Course_service.Models.DTOs;
+using SharedModels;
 
 namespace Course_service.Controllers
 {
@@ -86,16 +78,13 @@ namespace Course_service.Controllers
         [HttpPost]
         public async Task<ActionResult> PostEnrollment(EnrollmentDto enrollment)
         {
-            var newEnrollment = new
+            await _publishEndpoint.Publish<CourseEnrolled>(new
             {
-                Id = enrollment.Id,
-                UserId = enrollment.UserId,
-                CourseId = enrollment.CourseId,
-                EnrolledDate = DateTime.Now,
-            };
-
-            await _publishEndpoint.Publish<CourseEnrolled>(newEnrollment);
-            return Ok(newEnrollment);
+                enrollment.Id,
+                enrollment.UserId,
+                enrollment.CourseId
+            });
+            return Ok("true");
 
             //_context.Enrollments.Add(enrollment);
             //await _context.SaveChangesAsync();

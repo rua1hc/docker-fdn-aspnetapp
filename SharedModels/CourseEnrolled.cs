@@ -1,4 +1,4 @@
-﻿namespace NotificationService.Contracts
+﻿namespace SharedModels
 {
     public record CourseEnrolled
     {

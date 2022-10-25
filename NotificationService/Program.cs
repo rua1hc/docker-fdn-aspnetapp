@@ -1,5 +1,7 @@
 using MassTransit;
+using NotificationService.Configuration;
 using NotificationService.Consumers;
+using NotificationService.Services;
 
 namespace NotificationService
 {
@@ -23,6 +25,10 @@ namespace NotificationService
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            //2.
+            builder.Services.Configure<Smtp>(builder.Configuration.GetSection("Smtp"));
+            builder.Services.AddTransient<IMailService, MailService>();
 
             var app = builder.Build();
 

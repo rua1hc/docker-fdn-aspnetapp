@@ -6,16 +6,16 @@ services:
         ports:
             - 15672:15672
             - 5672:5672
-	course-service:
-		image: ${DOCKER_REGISTRY-}Course-service
-		build:
-			context: .
-			dockerfile: Course-service/Dockerfile
-		ports:
-            - 7048:80
-            - 7047:443
-		depends_on:
-            - rabbitmq
+    # course-service:
+    #     image: ${DOCKER_REGISTRY-}Course-service
+    #     build:
+    #         context: .
+    #         dockerfile: Course-service/Dockerfile
+    #     ports:
+    #         - 7048:80
+    #         - 7047:443
+    #     depends_on:
+    #         - rabbitmq
     # app:
     #     build:
     #         context: .
