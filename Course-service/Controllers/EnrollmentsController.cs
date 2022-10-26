@@ -82,9 +82,16 @@ namespace Course_service.Controllers
             {
                 enrollment.Id,
                 enrollment.UserId,
-                enrollment.CourseId
+                enrollment.CourseId,
+                DateTime.Now
             });
-            return Ok("true");
+            return Ok(new CourseEnrolled()
+            {
+                Id = enrollment.Id,
+                UserId = enrollment.UserId,
+                CourseId = enrollment.CourseId,
+                EnrolledDate = DateTime.Now
+            });
 
             //_context.Enrollments.Add(enrollment);
             //await _context.SaveChangesAsync();

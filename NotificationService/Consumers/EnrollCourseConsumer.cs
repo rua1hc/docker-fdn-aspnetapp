@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using Microsoft.Extensions.Logging;
 using NotificationService.Models;
 using NotificationService.Services;
 using SharedModels;
@@ -20,26 +21,13 @@ namespace NotificationService.Consumers
 
         public async Task Consume(ConsumeContext<CourseEnrolled> context)
         {
-            _logger.LogInformation("_logger enrollment: {Id} - {UserId} - {CourseId} - {EnrolledDate}",
-                context.Message.Id, context.Message.UserId,
-                context.Message.CourseId, context.Message.EnrolledDate);
-            Console.WriteLine($"_CW enrollment: {context.Message.Id} - {context.Message.UserId} - {context.Message.CourseId} - {context.Message.EnrolledDate}");
-
             var mailContent = $"New enrollment: {context.Message.Id} - {context.Message.UserId} - {context.Message.CourseId} - {context.Message.EnrolledDate}";
-            _mailService.SendMail(mailContent);
+            _logger.LogInformation(mailContent);
 
-            //{
-            //    "to": [
-            //        "joesph.beatty9@ethereal.email"
-            //    ],
-            //    "displayName": "Christian Schou",
-            //    "replyTo": "test@mail.dk",
-            //    "replyToName": "Test mail",
-            //    "subject": "Hello World",
-            //    "body": "Hola - this is just a test to verify that our mailing works. Have a great day!"
-            //}
-            var mailMessage = new MailMessage("Course Enrollment Registration", body: mailContent);
+            var mailMessage = new MailMessage(subject: "Course Enrollment Registration 2", body: mailContent);
             await _mailService.SendMailAsync(mailMessage, new CancellationToken());
+
+            _mailService.SendMail(mailContent);
         }
     }
 
@@ -59,7 +47,7 @@ namespace NotificationService.Consumers
                                     IConsumerConfigurator<EnrollCourseConsumer> consumerConfigurator)
         {
             // configure message retry with millisecond intervals
-            endpointConfigurator.UseMessageRetry(r => r.Intervals(100, 200, 500, 800, 1000));
+            endpointConfigurator.UseMessageRetry(r => r.Intervals(2000, 4000, 8000));
 
             // use the outbox to prevent duplicate events from being published
             endpointConfigurator.UseInMemoryOutbox();

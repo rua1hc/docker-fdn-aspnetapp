@@ -1,3 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+
+using ReportService.Models;
+
 namespace ReportService
 {
     public class Program
@@ -6,7 +10,9 @@ namespace ReportService
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            //1.db
+            builder.Services.AddDbContext<NetReportDbContext>(options
+                => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

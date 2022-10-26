@@ -1,13 +1,13 @@
 ###
 https://localhost:7237/api/enrollments
 ###
-POST https://localhost:7237/api/enrollments
+POST http://localhost:7237/api/enrollments
 content-type: application/json
 
 {
-    "Id": "111",
+    "Id": "123",
     "UserId": "22",
-    "CourseId": "1111"
+    "CourseId": "123"
 }
 ###
 PUT https://localhost:7237/api/enrollments/4

@@ -22,10 +22,10 @@ namespace NotificationService.Services
         public void SendMail(string mailContent)
         {
             MimeMessage mail = new MimeMessage();
-            mail.From.Add(new MailboxAddress("NotificationService", _configuration["Smtp:From"]));
-            mail.To.Add(new MailboxAddress("Mr. Test", _configuration["Smtp:To"]));
+            mail.From.Add(new MailboxAddress(_configuration["Smtp:DisplayName"], _configuration["Smtp:From"]));
+            mail.To.Add(new MailboxAddress(_configuration["Smtp:To"], _configuration["Smtp:Username"]));
 
-            mail.Subject = "Course Enrollment Registration";
+            mail.Subject = "Course Enrollment Registration 1";
 
             BodyBuilder bodyBuilder = new BodyBuilder();
             bodyBuilder.TextBody = mailContent;// order.ToString();
@@ -48,9 +48,9 @@ namespace NotificationService.Services
             {
                 var mail = new MimeMessage();
 
-                #region Sender/Receiver
-                mail.From.Add(new MailboxAddress(_smtp.DisplayName, mailMessage.From ?? _smtp.From));
-                mail.Sender = new MailboxAddress(mailMessage.DisplayName ?? _smtp.DisplayName, mailMessage.From ?? _smtp.From);
+                #region Header
+                mail.From.Add(new MailboxAddress(mailMessage.DisplayName ?? _smtp.DisplayName, mailMessage.From ?? _smtp.From));
+                //mail.Sender = new MailboxAddress(mailMessage.DisplayName ?? _smtp.DisplayName, mailMessage.From ?? _smtp.From);
 
                 mail.To.Add(new MailboxAddress(_smtp.To, _smtp.Username));
                 if (mailMessage.To != null)
@@ -75,14 +75,14 @@ namespace NotificationService.Services
                 }
                 #endregion
 
-                #region Content
+                #region Body
                 var body = new BodyBuilder();
                 mail.Subject = mailMessage.Subject;
                 body.HtmlBody = mailMessage.Body;
                 mail.Body = body.ToMessageBody();
                 #endregion
 
-                #region Send Mail
+                #region Send
                 using var smtp = new SmtpClient();
 
                 if (_smtp.UseSSL)

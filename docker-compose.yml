@@ -4,18 +4,28 @@ services:
     rabbitmq:
         image: masstransit/rabbitmq
         ports:
-            - 15672:15672
             - 5672:5672
-    # course-service:
-    #     image: ${DOCKER_REGISTRY-}Course-service
-    #     build:
-    #         context: .
-    #         dockerfile: Course-service/Dockerfile
-    #     ports:
-    #         - 7048:80
-    #         - 7047:443
-    #     depends_on:
-    #         - rabbitmq
+            - 15672:15672
+    course-api:
+        image: ${DOCKER_REGISTRY-}course-api
+        build:
+            context: .
+            dockerfile: Course-service/Dockerfile
+        ports:
+            - 7237:80
+            - 5237:443
+        depends_on:
+            - rabbitmq
+    notification:
+        image: ${DOCKER_REGISTRY-}notification
+        build:
+            context: .
+            dockerfile: NotificationService/Dockerfile
+        ports:
+            - 7094:80
+            - 5094:443
+        depends_on:
+            - course-api
     # app:
     #     build:
     #         context: .

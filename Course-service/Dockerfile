@@ -6,7 +6,7 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Course-service/Course-service.csproj", "Course-service/"]
-COPY ["Shared/Shared.csproj", "Shared/"]
+COPY ["SharedModels/SharedModels.csproj", "SharedModels/"]
 RUN dotnet restore "Course-service/Course-service.csproj"
 COPY . .
 WORKDIR "/src/Course-service"

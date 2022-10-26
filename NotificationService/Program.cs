@@ -18,7 +18,13 @@ namespace NotificationService
             {
                 x.AddConsumer<EnrollCourseConsumer>(typeof(EnrollCourseConsumerDefinition));
                 x.SetKebabCaseEndpointNameFormatter();
-                x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context));
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
+                        cfg.Host("rabbitmq");
+
+                    cfg.ConfigureEndpoints(context);
+                });
             });
 
             builder.Services.AddControllers();
