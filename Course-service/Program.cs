@@ -3,6 +3,10 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 //using Course_service.Controllers;
 
+static bool isRunningInDocker() {
+    return Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 //1.db
@@ -13,8 +17,7 @@ builder.Services.AddDbContext<NetCourseDbContext>(options
 builder.Services.AddMassTransit(x => {
     x.UsingRabbitMq((context, cfg) =>
     {
-        if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
-            cfg.Host("rabbitmq");
+        if (isRunningInDocker()) cfg.Host("rabbitmq");
 
         //cfg.UseDelayedMessageScheduler();
 
@@ -39,6 +42,18 @@ builder.Services.AddMassTransit(x => {
 //    options.StartTimeout = TimeSpan.FromSeconds(10);
 //    options.StopTimeout = TimeSpan.FromSeconds(30);
 //});
+
+//3.
+builder.Services.AddHttpClient("UserApi", c =>
+{
+    c.BaseAddress = new Uri("http://localhost:5011/");
+    if (isRunningInDocker())
+    {
+        c.BaseAddress = new Uri("http://user-api/");
+    }
+
+    c.DefaultRequestHeaders.Add("X-req-sid", "CourseApi");
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

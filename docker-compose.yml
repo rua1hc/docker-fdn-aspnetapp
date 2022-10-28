@@ -6,11 +6,15 @@ services:
         ports:
             - 5672:5672
             - 15672:15672
+        depends_on:
+            - mssql
     course-api:
         image: ${DOCKER_REGISTRY-}course-api
         build:
             context: .
             dockerfile: Course-service/Dockerfile
+        environment:
+            - ConnectionStrings__DefaultConnection=Server=mssql;database=net_Course;User Id=sa;Password=Admin123!
         ports:
             - 7237:80
             - 5237:443
@@ -26,6 +30,57 @@ services:
             - 5094:443
         depends_on:
             - course-api
+    user-api:
+        image: ${DOCKER_REGISTRY-}user-api
+        build:
+            context: .
+            dockerfile: aspnetapp\Dockerfile
+        environment:
+            - ConnectionStrings__DefaultConnection=Server=mssql;database=net_User;User Id=sa;Password=Admin123!
+        ports:
+            - 7131:80
+            - 5011:443
+        depends_on:
+            - mssql
+    mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        environment:
+            - ACCEPT_EULA=Y
+            - MSSQL_SA_PASSWORD=Admin123!
+            # ACCEPT_EULA: "Y"
+            # MSSQL_SA_PASSWORD: "Admin123!"
+        ports:
+            - 1433:1433
+        volumes:
+            # - ./mssql:/scripts/
+            - ./manInitDb4Docker.sql:/scripts/manInitDb4Docker.sql
+        command:
+            - /bin/bash
+            - -c
+            - |
+                # Launch MSSQL and send to background
+                /opt/mssql/bin/sqlservr &
+                pid=$$!
+                # Wait for it to be available
+                echo "Waiting for MS SQL to be available ⏳"
+                /opt/mssql-tools/bin/sqlcmd -l 30 -S localhost -h-1 -V1 -U sa -P $$MSSQL_SA_PASSWORD -Q "SET NOCOUNT ON SELECT \"YAY WE ARE UP\" , @@servername"
+                is_up=$$?
+                while [ $$is_up -ne 0 ] ; do
+                    echo -e $$(date)
+                    /opt/mssql-tools/bin/sqlcmd -l 30 -S localhost -h-1 -V1 -U sa -P $$MSSQL_SA_PASSWORD -Q "SET NOCOUNT ON SELECT \"YAY WE ARE UP\" , @@servername"
+                    is_up=$$?
+                    sleep 5
+                done
+                # Run every script in /scripts
+                # TODO set a flag so that this is only done once on creation, not every time the container runs
+                for foo in /scripts/*.sql
+                    do /opt/mssql-tools/bin/sqlcmd -U sa -P $$MSSQL_SA_PASSWORD -l 30 -e -i $$foo
+                done
+                # trap SIGTERM and send same to sqlservr process for clean shutdown
+                trap "kill -15 $$pid" SIGTERM
+                # Wait on the sqlserver process
+                wait $$pid
+                exit 0
     # app:
     #     build:
     #         context: .
@@ -58,14 +113,6 @@ services:
     #     volumes:
     #         - ./dbSetup.sql:/docker-entrypoint-initdb.d/dbSetup.sql
     #         - vdata:/var/lib/mysql
-    # mssql:
-    #     image: mcr.microsoft.com/mssql/server:2022-latest
-    #     environment:
-    #         ACCEPT_EULA: Y
-    #         SA_PASSWORD: 24061990
-    #         MSSQL_PID: Express
-    #     ports:
-    #         - 1433:1433
     # seq:
     #     image: datalust/seq
     #     restart: unless-stopped
@@ -76,5 +123,6 @@ services:
     #     ports:
     #         - 8080:80
     #         - 5342:5341
+
 # volumes:
 #     vdata:

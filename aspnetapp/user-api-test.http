@@ -1,5 +1,7 @@
 ###
-https://localhost:7131/api/user/
+http://localhost:5011/api/users/
+###
+https://localhost:7131/api/users/
 ###
 POST https://localhost:7131/api/user
 content-type: application/json

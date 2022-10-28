@@ -50,8 +50,7 @@ try
     builder.Services.AddHttpClient("randApi", c =>
     {
         c.BaseAddress = new Uri("https://localhost:12345/");
-        c.DefaultRequestHeaders.Add("X-token", "add-header-1");
-        c.DefaultRequestHeaders.Add("X-REQUEST-ID", "service-1");
+        c.DefaultRequestHeaders.Add("X-REQUEST-sID", "service-1");
     });
     builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(httpRetryPolicy);
 

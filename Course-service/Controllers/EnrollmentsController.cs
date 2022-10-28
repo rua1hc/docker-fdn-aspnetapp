@@ -4,6 +4,8 @@ using Course_service.Models;
 using MassTransit;
 using Course_service.Models.DTOs;
 using SharedModels;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace Course_service.Controllers
 {
@@ -13,12 +15,15 @@ namespace Course_service.Controllers
     {
         private readonly NetCourseDbContext _context;
         readonly IPublishEndpoint _publishEndpoint;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public EnrollmentsController(NetCourseDbContext context,
-                                    IPublishEndpoint publishEndpoint)
+                                    IPublishEndpoint publishEndpoint,
+                                    IHttpClientFactory httpClientFactory)
         {
             _context = context;
             _publishEndpoint = publishEndpoint;
+            _httpClientFactory = httpClientFactory;
         }
 
         // GET: api/Enrollments
@@ -97,6 +102,21 @@ namespace Course_service.Controllers
             //await _context.SaveChangesAsync();
 
             //return CreatedAtAction("GetEnrollment", new { id = enrollment.Id }, enrollment);
+
+            var httpClient = _httpClientFactory.CreateClient("UserApi");
+            var httpResponseMessage = await httpClient.GetAsync($"api/users/{enrollment.UserId}");
+
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
+
+                var UserApiReturned = await JsonSerializer.DeserializeAsync<UserApiDto>(contentStream);
+                return Ok(UserApiReturned);
+            }
+            else
+            {
+                return NotFound("UserId not found");
+            }
         }
 
         // DELETE: api/Enrollments/5
