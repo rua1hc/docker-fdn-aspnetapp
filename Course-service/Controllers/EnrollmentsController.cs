@@ -103,7 +103,7 @@ namespace Course_service.Controllers
 
             //return CreatedAtAction("GetEnrollment", new { id = enrollment.Id }, enrollment);
 
-            var httpClient = _httpClientFactory.CreateClient("UserApi");
+            var httpClient = _httpClientFactory.CreateClient("UsersApi");
             var httpResponseMessage = await httpClient.GetAsync($"api/users/{enrollment.UserId}");
 
             if (httpResponseMessage.IsSuccessStatusCode)

@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using aspnetapp.Models;
 
-namespace aspnetapp.Controllers;
+using Microsoft.AspNetCore.Mvc;
+
+using Models;
+
+namespace Controllers;
 
 public class HomeController : Controller
 {

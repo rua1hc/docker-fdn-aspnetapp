@@ -1,4 +1,4 @@
-namespace Course_service
+namespace Course_service.Models
 {
     public class WeatherForecast
     {

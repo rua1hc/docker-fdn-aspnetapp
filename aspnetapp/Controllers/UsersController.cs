@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace aspnetapp.Controllers;
+namespace Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -14,14 +14,14 @@ public class UsersController : ControllerBase
         _context = context;
     }
 
-    // GET: api/user
+    // GET: api/users
     [HttpGet]
     public async Task<ActionResult<IEnumerable<User>>> Getusers()
     {
         return await _context.Users.ToListAsync();
     }
 
-    // GET: api/user/1
+    // GET: api/users/1
     [HttpGet("{id}")]
     public async Task<ActionResult<User>> Getuser(int id)
     {
@@ -29,7 +29,7 @@ public class UsersController : ControllerBase
         return user == null ? NotFound() : Ok(user);
     }
 
-    // POST: api/user
+    // POST: api/users
     [HttpPost]
     public async Task<ActionResult<User>> Adduser(User user)
     {
@@ -41,7 +41,7 @@ public class UsersController : ControllerBase
         return CreatedAtAction(nameof(Getuser), new { id = user.Id }, user);
     }
 
-    // PUT: api/user/2
+    // PUT: api/users/2
     [HttpPut("{id}")]
     public async Task<IActionResult> Updateuser(int id, User user)
     {
@@ -59,7 +59,7 @@ public class UsersController : ControllerBase
         {
             await _context.SaveChangesAsync();
         }
-        catch (DbUpdateConcurrencyException) when (!userExists(id))
+        catch (DbUpdateConcurrencyException) when (!IsUserExisted(id))
         {
             return NotFound();
         }
@@ -67,7 +67,7 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/user/3
+    // DELETE: api/users/3
     [HttpDelete("{id}")]
     public async Task<IActionResult> Deleteuser(int id)
     {
@@ -80,12 +80,12 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    private bool userExists(int id)
+    private bool IsUserExisted(int id)
     {
         return _context.Users.Any(e => e.Id == id);
     }
 
-    private static UserDto user2Dto(User user) => new UserDto
+    private static UserDto User2Dto(User user) => new UserDto
     {
         Id = user.Id,
         FirstName = user.FirstName,

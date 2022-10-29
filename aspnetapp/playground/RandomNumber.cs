@@ -1,9 +1,10 @@
 ﻿using Polly;
 using Polly.CircuitBreaker;
+
 using System.Net;
 //using Serilog;
 
-namespace playground.RandomNumber
+namespace playground
 {
     public class RandomNumber
     {

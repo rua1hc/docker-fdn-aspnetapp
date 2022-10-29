@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
 		docker-compose.yml = docker-compose.yml
+		LICENSE.txt = LICENSE.txt
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -22,7 +23,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotificationService", "Noti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReportService", "ReportService\ReportService.csproj", "{3821A99A-E0C1-42D0-A7CD-17D0D346F870}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedModels", "SharedModels\SharedModels.csproj", "{D64D1387-3A94-4C12-A56C-E1B9344CB8DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedModels", "SharedModels\SharedModels.csproj", "{D64D1387-3A94-4C12-A56C-E1B9344CB8DA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mssql", "mssql", "{05C38F47-8445-48FF-B866-81A1AA252FBE}"
+	ProjectSection(SolutionItems) = preProject
+		mssql\Dockerfile = mssql\Dockerfile
+		mssql\entrypoint.sh = mssql\entrypoint.sh
+		mssql\initialization.sh = mssql\initialization.sh
+		mssql\seedingDbInDocker.sql = mssql\seedingDbInDocker.sql
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -121,6 +130,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{05C38F47-8445-48FF-B866-81A1AA252FBE} = {1E1C7ABA-885A-4273-811E-B66AD28F9A87}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C9A7C5A2-5C90-4AD9-ABB8-6F2D2364D5AF}

@@ -1,3 +1,5 @@
+using Course_service.Models;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace Course_service.Controllers

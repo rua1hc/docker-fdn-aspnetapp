@@ -2,6 +2,10 @@
 **/bin/
 **/obj/
 **/out/
+.git
+.vs
+.vscode
 
 # files
 **/*.md
+.gitignore

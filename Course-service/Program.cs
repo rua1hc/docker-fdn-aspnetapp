@@ -44,7 +44,7 @@ builder.Services.AddMassTransit(x => {
 //});
 
 //3.
-builder.Services.AddHttpClient("UserApi", c =>
+builder.Services.AddHttpClient("UsersApi", c =>
 {
     c.BaseAddress = new Uri("http://localhost:5011/");
     if (isRunningInDocker())
@@ -52,7 +52,7 @@ builder.Services.AddHttpClient("UserApi", c =>
         c.BaseAddress = new Uri("http://user-api/");
     }
 
-    c.DefaultRequestHeaders.Add("X-req-sid", "CourseApi");
+    c.DefaultRequestHeaders.Add("X-req-sid", "CoursesApi");
 });
 
 builder.Services.AddControllers();

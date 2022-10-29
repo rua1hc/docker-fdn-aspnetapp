@@ -1,7 +1,11 @@
 ###
-https://localhost:7237/api/enrollments
+http://localhost:5011/api/users/
+
+
+### ### ###
+http://localhost:7237/api/enrollments
 ###
-POST https://localhost:7237/api/enrollments
+POST http://localhost:7237/api/enrollments
 content-type: application/json
 
 {
@@ -14,7 +18,7 @@ PUT https://localhost:7237/api/enrollments/4
 content-type: application/json
 
 {
-    "Id": 5
+
 }
 ###
 DELETE https://localhost:7237/api/enrollments/99
@@ -22,6 +26,3 @@ DELETE https://localhost:7237/api/enrollments/99
 
 
 ### ### ###
-httpss://localhost:7237/testPollyCB
-###
-
