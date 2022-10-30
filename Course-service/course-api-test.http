@@ -6,7 +6,7 @@ content-type: application/json
 
 {
     "Id": "1",
-    "UserId": "22",
+    "UserId": "2",
     "CourseId": "123"
 }
 ###

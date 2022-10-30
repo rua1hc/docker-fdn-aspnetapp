@@ -90,13 +90,13 @@ namespace Course_service.Controllers
                 enrollment.CourseId,
                 DateTime.Now
             });
-            return Ok(new CourseEnrolled()
-            {
-                Id = enrollment.Id,
-                UserId = enrollment.UserId,
-                CourseId = enrollment.CourseId,
-                EnrolledDate = DateTime.Now
-            });
+            //return Ok(new CourseEnrolled()
+            //{
+            //    Id = enrollment.Id,
+            //    UserId = enrollment.UserId,
+            //    CourseId = enrollment.CourseId,
+            //    EnrolledDate = DateTime.Now
+            //});
 
             //_context.Enrollments.Add(enrollment);
             //await _context.SaveChangesAsync();
@@ -109,9 +109,8 @@ namespace Course_service.Controllers
             if (httpResponseMessage.IsSuccessStatusCode)
             {
                 using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
-
-                var UserApiReturned = await JsonSerializer.DeserializeAsync<UserApiDto>(contentStream);
-                return Ok(UserApiReturned);
+                var user = await JsonSerializer.DeserializeAsync<UsersApiReturnedDto>(contentStream);
+                return Ok(user);
             }
             else
             {

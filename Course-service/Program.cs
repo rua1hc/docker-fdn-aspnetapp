@@ -1,9 +1,12 @@
 using Course_service.Models;
+
 using MassTransit;
+
 using Microsoft.EntityFrameworkCore;
 //using Course_service.Controllers;
 
-static bool isRunningInDocker() {
+static bool isRunningInDocker()
+{
     return Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 }
 
@@ -14,7 +17,8 @@ builder.Services.AddDbContext<NetCourseDbContext>(options
     => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //2.
-builder.Services.AddMassTransit(x => {
+builder.Services.AddMassTransit(x =>
+{
     x.UsingRabbitMq((context, cfg) =>
     {
         if (isRunningInDocker()) cfg.Host("rabbitmq");
@@ -36,7 +40,8 @@ builder.Services.AddMassTransit(x => {
         //});
     });
 });
-//builder.Services.AddOptions<MassTransitHostOptions>().Configure(options => {
+//builder.Services.AddOptions<MassTransitHostOptions>().Configure(options =>
+//{
 //    // if specified, waits until the bus is started before returning from IHostedService.StartAsync
 //    options.WaitUntilStarted = true; // default is false
 //    options.StartTimeout = TimeSpan.FromSeconds(10);

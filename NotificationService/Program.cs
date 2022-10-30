@@ -3,12 +3,20 @@ using NotificationService.Configuration;
 using NotificationService.Consumers;
 using NotificationService.Services;
 
+using Serilog;
+
 namespace NotificationService
 {
     public class Program
     {
         public static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                //.Enrich.WithThreadId()
+                //.Enrich.WithThreadName()
+                .CreateLogger();
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
@@ -37,6 +45,9 @@ namespace NotificationService
             builder.Services.AddTransient<IMailService, MailService>();
 
             var app = builder.Build();
+
+            //
+            //app.UseSerilogRequestLogging();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

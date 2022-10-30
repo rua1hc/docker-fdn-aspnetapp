@@ -1,12 +1,12 @@
 ﻿using MassTransit;
-using Microsoft.Extensions.Logging;
+
 using NotificationService.Models;
 using NotificationService.Services;
+
 using SharedModels;
 
 namespace NotificationService.Consumers
 {
-
     class EnrollCourseConsumer : IConsumer<CourseEnrolled>
     {
         readonly ILogger<EnrollCourseConsumer> _logger;
@@ -36,11 +36,11 @@ namespace NotificationService.Consumers
         public EnrollCourseConsumerDefinition()
         {
             // override the default endpoint name
-            EndpointName = "course-service";
+            EndpointName = "course-enrolled";
 
             // limit the number of messages consumed concurrently
             // this applies to the consumer only, not the endpoint
-            ConcurrentMessageLimit = 8;
+            ConcurrentMessageLimit = 6;
         }
 
         protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator,
