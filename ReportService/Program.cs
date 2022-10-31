@@ -1,5 +1,8 @@
+using MassTransit;
+
 using Microsoft.EntityFrameworkCore;
 
+using ReportService.Consumers;
 using ReportService.Models;
 
 using Serilog;
@@ -28,6 +31,20 @@ namespace ReportService
                     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                     .Enrich.FromLogContext()
                     .WriteTo.Console());
+
+                //
+                builder.Services.AddMassTransit(x =>
+                {
+                    x.AddConsumer<EnrollCourseConsumer>(typeof(EnrollCourseConsumerDefinition));
+                    x.SetKebabCaseEndpointNameFormatter();
+                    x.UsingRabbitMq((context, cfg) =>
+                    {
+                        if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
+                            cfg.Host("rabbitmq");
+
+                        cfg.ConfigureEndpoints(context);
+                    });
+                });
 
                 //1.db
                 builder.Services.AddDbContext<NetReportDbContext>(options

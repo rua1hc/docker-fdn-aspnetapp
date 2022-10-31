@@ -3,10 +3,13 @@ using Course_service.Models;
 using MassTransit;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+
+using System.Text.Json.Serialization;
 //using Course_service.Controllers;
 
 static bool isRunningInDocker()
@@ -31,6 +34,14 @@ try
         .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
         .Enrich.FromLogContext()
         .WriteTo.Console());
+
+    //2.
+    //builder.Services.AddHealthChecks();
+    //builder.Services.Configure<HealthCheckPublisherOptions>(options =>
+    //{
+    //    options.Delay = TimeSpan.FromSeconds(5);
+    //    options.Predicate = (check) => check.Tags.Contains("ready");
+    //});
 
     //1.db
     builder.Services.AddDbContext<NetCourseDbContext>(options
@@ -80,7 +91,13 @@ try
         c.DefaultRequestHeaders.Add("X-req-sid", "CoursesApi");
     });
 
-    builder.Services.AddControllers();
+    //JsonOptions
+    //builder.Services.AddControllers();
+    builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();

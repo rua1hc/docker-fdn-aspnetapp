@@ -2,12 +2,19 @@ version: "3.9"
 
 services:
     rabbitmq:
-        image: masstransit/rabbitmq
+        image: ${DOCKER_REGISTRY-}rabbitmq
+        # image: masstransit/rabbitmq
+        build:
+            context: .
+            dockerfile: rabbitmq/Dockerfile
         ports:
             - 5672:5672
             - 15672:15672
-        depends_on:
-            - mssql
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:15672"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
     course-api:
         image: ${DOCKER_REGISTRY-}course-api
         build:
@@ -19,17 +26,10 @@ services:
             - 7237:80
             - 5237:443
         depends_on:
-            - rabbitmq
-    notification:
-        image: ${DOCKER_REGISTRY-}notification
-        build:
-            context: .
-            dockerfile: NotificationService/Dockerfile
-        ports:
-            - 7094:80
-            - 5094:443
-        depends_on:
-            - course-api
+            rabbitmq:
+                condition: service_healthy
+            mssql:
+                condition: service_started
     user-api:
         image: ${DOCKER_REGISTRY-}user-api
         build:
@@ -41,7 +41,29 @@ services:
             - 7131:80
             - 5011:443
         depends_on:
-            - mssql
+            - course-api
+    notification:
+        image: ${DOCKER_REGISTRY-}notification
+        build:
+            context: .
+            dockerfile: NotificationService/Dockerfile
+        ports:
+            - 7094:80
+            - 5094:443
+        depends_on:
+            - course-api
+    report:
+        image: ${DOCKER_REGISTRY-}report
+        build:
+            context: .
+            dockerfile: ReportService/Dockerfile
+        environment:
+            - ConnectionStrings__DefaultConnection=Server=mssql;database=net_Report;User Id=sa;Password=Admin123!
+        ports:
+            - 7124:80
+            - 5124:443
+        depends_on:
+            - course-api
     mssql:
         image: mcr.microsoft.com/mssql/server:2022-latest
         environment:

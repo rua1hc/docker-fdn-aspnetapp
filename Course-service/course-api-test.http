@@ -5,9 +5,8 @@ POST https://localhost:7237/api/enrollments
 content-type: application/json
 
 {
-    "Id": "1",
-    "UserId": "2",
-    "CourseId": "123"
+    "UserId": "1",
+    "CourseId": "1"
 }
 ###
 PUT https://localhost:7237/api/enrollments/4

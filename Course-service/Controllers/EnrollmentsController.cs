@@ -6,6 +6,7 @@ using Course_service.Models.DTOs;
 using SharedModels;
 using System.Net.Http;
 using System.Text.Json;
+using static MassTransit.ValidationResultExtensions;
 
 namespace Course_service.Controllers
 {
@@ -14,16 +15,19 @@ namespace Course_service.Controllers
     public class EnrollmentsController : ControllerBase
     {
         private readonly NetCourseDbContext _context;
-        readonly IPublishEndpoint _publishEndpoint;
         private readonly IHttpClientFactory _httpClientFactory;
+        readonly IPublishEndpoint _publishEndpoint;
+        readonly ILogger<EnrollmentsController> _logger;
 
         public EnrollmentsController(NetCourseDbContext context,
+                                    IHttpClientFactory httpClientFactory,
                                     IPublishEndpoint publishEndpoint,
-                                    IHttpClientFactory httpClientFactory)
+                                    ILogger<EnrollmentsController> logger)
         {
             _context = context;
-            _publishEndpoint = publishEndpoint;
             _httpClientFactory = httpClientFactory;
+            _publishEndpoint = publishEndpoint;
+            _logger = logger;
         }
 
         // GET: api/Enrollments
@@ -83,39 +87,41 @@ namespace Course_service.Controllers
         [HttpPost]
         public async Task<ActionResult> PostEnrollment(EnrollmentDto enrollment)
         {
-            await _publishEndpoint.Publish<CourseEnrolled>(new
-            {
-                enrollment.Id,
-                enrollment.UserId,
-                enrollment.CourseId,
-                DateTime.Now
-            });
-            //return Ok(new CourseEnrolled()
-            //{
-            //    Id = enrollment.Id,
-            //    UserId = enrollment.UserId,
-            //    CourseId = enrollment.CourseId,
-            //    EnrolledDate = DateTime.Now
-            //});
-
-            //_context.Enrollments.Add(enrollment);
-            //await _context.SaveChangesAsync();
-
-            //return CreatedAtAction("GetEnrollment", new { id = enrollment.Id }, enrollment);
+            string userName, userEmail; //from UsersApi
 
             var httpClient = _httpClientFactory.CreateClient("UsersApi");
             var httpResponseMessage = await httpClient.GetAsync($"api/users/{enrollment.UserId}");
-
             if (httpResponseMessage.IsSuccessStatusCode)
             {
                 using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
                 var user = await JsonSerializer.DeserializeAsync<UsersApiReturnedDto>(contentStream);
-                return Ok(user);
+                if (user == null) return NotFound("UserId not found.");
+                userName = user.UserName;
+                userEmail = user.Email;
             }
             else
             {
-                return NotFound("UserId not found");
+                return BadRequest(new { error = $"Error: Users-Service returned {httpResponseMessage.StatusCode}." });
             }
+
+            var course = await _context.Courses.FindAsync(enrollment.CourseId);
+            if (course == null) return NotFound("CourseId not found.");
+
+            var newEnrollment = Dto2Enrollment(enrollment);
+            _context.Enrollments.Add(newEnrollment);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("CourseInfo: {Code}-{Price}", course.Code, course.Price);
+            await _publishEndpoint.Publish<CourseEnrolled>(new
+            {
+                UserName = userName,
+                UserEmail = userEmail,
+                CourseName = course.Code,
+                CoursePrice = course.Price,
+                EnrolledDate = newEnrollment.EnrolledDate
+            });
+
+            return CreatedAtAction("GetEnrollment", new { id = newEnrollment.Id }, newEnrollment);
         }
 
         // DELETE: api/Enrollments/5
@@ -138,5 +144,12 @@ namespace Course_service.Controllers
         {
             return _context.Enrollments.Any(e => e.Id == id);
         }
+        private static Enrollment Dto2Enrollment(EnrollmentDto e) => new Enrollment
+        {
+            UserId = e.UserId,
+            CourseId = e.CourseId,
+            EnrolledDate = DateTime.Now
+        };
+
     }
 }

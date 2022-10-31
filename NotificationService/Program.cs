@@ -28,7 +28,10 @@ namespace NotificationService
                 builder.Host.UseSerilog((ctx, lc) => lc
                     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                     .Enrich.FromLogContext()
-                    .WriteTo.Console());
+                .Enrich.WithProcessId()
+                .Enrich.WithThreadId()
+                .Enrich.WithThreadName()
+                    .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} <{ProcessId}><{ThreadId}><{ThreadName}>{NewLine}{Exception}"));
 
                 //1.
                 builder.Services.AddMassTransit(x =>

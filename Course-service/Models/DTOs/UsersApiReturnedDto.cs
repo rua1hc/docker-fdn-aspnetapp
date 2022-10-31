@@ -16,7 +16,7 @@ namespace Course_service.Models.DTOs
         public int Id { get; set; }
 
         [JsonPropertyName("userName")]
-        public string? UserName { get; set; }
+        public string UserName { get; set; } = null!;
 
         [JsonPropertyName("firstName")]
         public string? FirstName { get; set; }
@@ -25,7 +25,7 @@ namespace Course_service.Models.DTOs
         public string? LastName { get; set; }
 
         [JsonPropertyName("email")]
-        public string? Email { get; set; }
+        public string Email { get; set; } = null!;
 
         [JsonPropertyName("phone")]
         public string? Phone { get; set; }

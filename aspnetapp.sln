@@ -33,6 +33,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mssql", "mssql", "{05C38F47
 		mssql\seedingDbInDocker.sql = mssql\seedingDbInDocker.sql
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rabbitmq", "rabbitmq", "{D76DF42E-3504-490B-BD6B-2040F682E177}"
+	ProjectSection(SolutionItems) = preProject
+		rabbitmq\Dockerfile = rabbitmq\Dockerfile
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -133,6 +138,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{05C38F47-8445-48FF-B866-81A1AA252FBE} = {1E1C7ABA-885A-4273-811E-B66AD28F9A87}
+		{D76DF42E-3504-490B-BD6B-2040F682E177} = {1E1C7ABA-885A-4273-811E-B66AD28F9A87}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C9A7C5A2-5C90-4AD9-ABB8-6F2D2364D5AF}

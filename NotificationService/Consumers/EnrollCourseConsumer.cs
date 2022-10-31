@@ -21,13 +21,13 @@ namespace NotificationService.Consumers
 
         public async Task Consume(ConsumeContext<CourseEnrolled> context)
         {
-            var mailContent = $"New enrollment: {context.Message.Id} - {context.Message.UserId} - {context.Message.CourseId} - {context.Message.EnrolledDate}";
-            _logger.LogInformation(mailContent);
+            var mailContent = $"{context.Message.UserName} - {context.Message.UserEmail} - {context.Message.CourseName} - {context.Message.CoursePrice}USD";
+            _logger.LogInformation("New enrollment: {mailContent}", mailContent);
+            //_mailService.SendMail(mailContent);
 
-            var mailMessage = new MailMessage(subject: "Course Enrollment Registration 2", body: mailContent);
+            var mailMessage = new MailMessage(body: mailContent,
+                                subject: $"Course Enrolled: {context.Message.CourseName}");
             await _mailService.SendMailAsync(mailMessage, new CancellationToken());
-
-            _mailService.SendMail(mailContent);
         }
     }
 

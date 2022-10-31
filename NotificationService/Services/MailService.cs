@@ -25,20 +25,18 @@ namespace NotificationService.Services
             mail.From.Add(new MailboxAddress(_configuration["Smtp:DisplayName"], _configuration["Smtp:From"]));
             mail.To.Add(new MailboxAddress(_configuration["Smtp:To"], _configuration["Smtp:Username"]));
 
-            mail.Subject = "Course Enrollment Registration 1";
+            mail.Subject = "Course Enrollment Registration backup";
 
             BodyBuilder bodyBuilder = new BodyBuilder();
             bodyBuilder.TextBody = mailContent;// order.ToString();
             mail.Body = bodyBuilder.ToMessageBody();
 
-            using (var client = new SmtpClient())
-            {
-                client.Connect(_configuration["Smtp:Host"], 587, false);
-                client.Authenticate(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+            using var client = new SmtpClient();
+            client.Connect(_configuration["Smtp:Host"], 587, false);
+            client.Authenticate(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
 
-                client.Send(mail);
-                client.Disconnect(true);
-            }
+            client.Send(mail);
+            client.Disconnect(true);
         }
 
 
