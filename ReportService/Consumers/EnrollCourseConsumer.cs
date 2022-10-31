@@ -51,7 +51,7 @@ namespace ReportService.Consumers
         public EnrollCourseConsumerDefinition()
         {
             // override the default endpoint name
-            EndpointName = "course-enrolled";
+            EndpointName = "course-enrolled-rp";
 
             // limit the number of messages consumed concurrently
             // this applies to the consumer only, not the endpoint
