@@ -1,12 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Polly;
 using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
 
 Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 
-Log.Information("Starting up - aspnetapp");
+Log.Information("Starting up - User Service");
 
 try
 {
@@ -17,6 +20,7 @@ try
     //1.
     builder.Host.UseSerilog((ctx, lc) => lc
         .WriteTo.Console()
+        //.WriteTo.Console(new CompactJsonFormatter())
         .ReadFrom.Configuration(ctx.Configuration));
 
     //2.DI
@@ -57,7 +61,21 @@ try
     var app = builder.Build();
 
     //1.
-    app.UseSerilogRequestLogging();
+    app.UseSerilogRequestLogging(options =>
+    {
+        // Customize the message template
+        options.MessageTemplate = "Handled {RequestPath}";
+
+        // Emit debug-level events instead of the defaults
+        options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Debug;
+
+        // Attach additional properties to the request completion event
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
+            diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+            diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+        };
+    });
 
     //4.
     app.UseSwagger();

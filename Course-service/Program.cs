@@ -3,6 +3,10 @@ using Course_service.Models;
 using MassTransit;
 
 using Microsoft.EntityFrameworkCore;
+
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
 //using Course_service.Controllers;
 
 static bool isRunningInDocker()
@@ -10,76 +14,116 @@ static bool isRunningInDocker()
     return Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 }
 
-var builder = WebApplication.CreateBuilder(args);
+//
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-//1.db
-builder.Services.AddDbContext<NetCourseDbContext>(options
-    => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+Log.Information("Starting up - Course Service");
 
-//2.
-builder.Services.AddMassTransit(x =>
+try
 {
-    x.UsingRabbitMq((context, cfg) =>
+    var builder = WebApplication.CreateBuilder(args);
+
+    //
+    builder.Host.UseSerilog((ctx, lc) => lc
+        .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+        .Enrich.FromLogContext()
+        .WriteTo.Console());
+
+    //1.db
+    builder.Services.AddDbContext<NetCourseDbContext>(options
+        => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    //2.
+    builder.Services.AddMassTransit(x =>
     {
-        if (isRunningInDocker()) cfg.Host("rabbitmq");
+        x.UsingRabbitMq((context, cfg) =>
+        {
+            if (isRunningInDocker()) cfg.Host("rabbitmq");
 
-        //cfg.UseDelayedMessageScheduler();
+            //cfg.UseDelayedMessageScheduler();
 
-        //var options = new ServiceInstanceOptions()
-        //    .SetEndpointNameFormatter(context.GetService<IEndpointNameFormatter>() ?? KebabCaseEndpointNameFormatter.Instance);
-        //cfg.ServiceInstance(options, instance =>
-        //{
-        //    instance.ConfigureJobServiceEndpoints(js =>
-        //    {
-        //        js.SagaPartitionCount = 1;
-        //        js.FinalizeCompleted = true;
+            //var options = new ServiceInstanceOptions()
+            //    .SetEndpointNameFormatter(context.GetService<IEndpointNameFormatter>() ?? KebabCaseEndpointNameFormatter.Instance);
+            //cfg.ServiceInstance(options, instance =>
+            //{
+            //    instance.ConfigureJobServiceEndpoints(js =>
+            //    {
+            //        js.SagaPartitionCount = 1;
+            //        js.FinalizeCompleted = true;
 
-        //        js.ConfigureSagaRepositories(context);
-        //    });
-        //    instance.ConfigureEndpoints(context);
-        //});
+            //        js.ConfigureSagaRepositories(context);
+            //    });
+            //    instance.ConfigureEndpoints(context);
+            //});
+        });
     });
-});
-//builder.Services.AddOptions<MassTransitHostOptions>().Configure(options =>
-//{
-//    // if specified, waits until the bus is started before returning from IHostedService.StartAsync
-//    options.WaitUntilStarted = true; // default is false
-//    options.StartTimeout = TimeSpan.FromSeconds(10);
-//    options.StopTimeout = TimeSpan.FromSeconds(30);
-//});
+    //builder.Services.AddOptions<MassTransitHostOptions>().Configure(options =>
+    //{
+    //    // if specified, waits until the bus is started before returning from IHostedService.StartAsync
+    //    options.WaitUntilStarted = true; // default is false
+    //    options.StartTimeout = TimeSpan.FromSeconds(10);
+    //    options.StopTimeout = TimeSpan.FromSeconds(30);
+    //});
 
-//3.
-builder.Services.AddHttpClient("UsersApi", c =>
-{
-    c.BaseAddress = new Uri("http://localhost:5011/");
-    if (isRunningInDocker())
+    //3.
+    builder.Services.AddHttpClient("UsersApi", c =>
     {
-        c.BaseAddress = new Uri("http://user-api/");
+        c.BaseAddress = new Uri("http://localhost:5011/");
+        if (isRunningInDocker())
+        {
+            c.BaseAddress = new Uri("http://user-api/");
+        }
+
+        c.DefaultRequestHeaders.Add("X-req-sid", "CoursesApi");
+    });
+
+    builder.Services.AddControllers();
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+
+    var app = builder.Build();
+
+    //
+    app.UseSerilogRequestLogging(options =>
+    {
+        options.MessageTemplate = "Handled {RequestPath}";
+
+        options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Debug;
+
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
+            diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+            diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+        };
+    });
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
     }
 
-    c.DefaultRequestHeaders.Add("X-req-sid", "CoursesApi");
-});
+    app.UseHttpsRedirection();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+    app.UseAuthorization();
 
-var app = builder.Build();
+    app.MapControllers();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    //app.MapCourseEndpoints();
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-//app.MapCourseEndpoints();
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Unhandled exception");
+}
+finally
+{
+    Log.Information("Shut down complete");
+    Log.CloseAndFlush();
+}
