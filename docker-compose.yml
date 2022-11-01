@@ -106,7 +106,8 @@ services:
     #         dockerfile: aspnetapp/Dockerfile
     #     environment:
     #         ASPNETCORE_ENVIRONMENT: Development
-    #         # SEQ_SERVER_URL: http://seq:5341
+    #         SEQ_SERVER_URL: "http://seq:5341"
+    #         # - SEQ_ADDRESS=http://seq:5341
     #     ports:
     #         - 7131:80
     #         - 5011:443
@@ -119,7 +120,8 @@ services:
     #         dockerfile: ServiceStub/Dockerfile
     #     environment:
     #         ASPNETCORE_ENVIRONMENT: Development
-    #         # SEQ_SERVER_URL: http://seq:5341
+    #         SEQ_SERVER_URL: "http://seq:5341"
+    #         # - SEQ_ADDRESS=http://seq:5341
     #     ports:
     #         - 12345:80
     #     # depends_on:
@@ -131,17 +133,15 @@ services:
     #         MYSQL_ROOT_PASSWORD: 240690
     #     volumes:
     #         - ./dbSetup.sql:/docker-entrypoint-initdb.d/dbSetup.sql
-    #         - vdata:/var/lib/mysql
+    #         - vmysql:/var/lib/mysql
     # seq:
     #     image: datalust/seq
     #     restart: unless-stopped
     #     environment:
     #         - ACCEPT_EULA=Y
-    #     volumes:
-    #         - vdata:/data
     #     ports:
     #         - 8080:80
     #         - 5342:5341
 
 # volumes:
-#     vdata:
+#     vmysql:
