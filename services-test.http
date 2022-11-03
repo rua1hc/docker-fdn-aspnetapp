@@ -11,6 +11,14 @@ content-type: application/json
     "UserId": "2",
     "CourseId": "1"
 }
+###
+POST http://localhost:7237/api/enrollments/sync
+content-type: application/json
+
+{
+    "UserId": "3",
+    "CourseId": "1"
+}
 
 
 ### ### ###

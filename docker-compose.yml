@@ -74,8 +74,9 @@ services:
         ports:
             - 1433:1433
         volumes:
-            # - ./mssql:/scripts/
+            - vmssql:/var/opt/mssql
             - ./manInitDb4Docker.sql:/scripts/manInitDb4Docker.sql
+            # - ./mssql:/scripts/
         command:
             - /bin/bash
             - -c
@@ -132,8 +133,8 @@ services:
     #         MYSQL_DATABASE: DotNetTraining
     #         MYSQL_ROOT_PASSWORD: 240690
     #     volumes:
-    #         - ./dbSetup.sql:/docker-entrypoint-initdb.d/dbSetup.sql
     #         - vmysql:/var/lib/mysql
+    #         - ./dbSetup.sql:/docker-entrypoint-initdb.d/dbSetup.sql
     # seq:
     #     image: datalust/seq
     #     restart: unless-stopped
@@ -143,5 +144,5 @@ services:
     #         - 8080:80
     #         - 5342:5341
 
-# volumes:
-#     vmysql:
+volumes:
+    vmssql:

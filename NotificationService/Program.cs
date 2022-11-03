@@ -43,6 +43,8 @@ namespace NotificationService
                         if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
                             cfg.Host("rabbitmq");
 
+                        //cfg.UseMessageRetry(r => r.Immediate(3));
+
                         cfg.ConfigureEndpoints(context);
                     });
                 });

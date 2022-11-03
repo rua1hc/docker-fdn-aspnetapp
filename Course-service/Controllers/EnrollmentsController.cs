@@ -4,9 +4,7 @@ using Course_service.Models;
 using MassTransit;
 using Course_service.Models.DTOs;
 using SharedModels;
-using System.Net.Http;
 using System.Text.Json;
-using static MassTransit.ValidationResultExtensions;
 
 namespace Course_service.Controllers
 {
@@ -87,21 +85,26 @@ namespace Course_service.Controllers
         [HttpPost]
         public async Task<ActionResult> PostEnrollment(EnrollmentDto enrollment)
         {
-            string userName, userEmail; //from UsersApi
+            string userName, userEmail;
 
             var httpClient = _httpClientFactory.CreateClient("UsersApi");
-            var httpResponseMessage = await httpClient.GetAsync($"api/users/{enrollment.UserId}");
-            if (httpResponseMessage.IsSuccessStatusCode)
+            var httpResponseMsg = await httpClient.GetAsync($"api/users/{enrollment.UserId}");
+
+            //await Task.Delay(5000);
+
+            if (httpResponseMsg.IsSuccessStatusCode)
             {
-                using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
-                var user = await JsonSerializer.DeserializeAsync<UsersApiReturnedDto>(contentStream);
+                //using var contentStream = await httpResponseMsg.Content.ReadAsStreamAsync();
+                //var user = await JsonSerializer.DeserializeAsync<UsersApiReturnedDto>(contentStream);
+
+                var user = await httpResponseMsg.Content.ReadFromJsonAsync<UsersApiReturnedDto>();
                 if (user == null) return NotFound("UserId not found.");
                 userName = user.UserName;
                 userEmail = user.Email;
             }
             else
             {
-                return BadRequest(new { error = $"Error: Users-Service returned {httpResponseMessage.StatusCode}." });
+                return BadRequest(new { error = $"Error: Users-Service returned {httpResponseMsg.StatusCode}." });
             }
 
             var course = await _context.Courses.FindAsync(enrollment.CourseId);
@@ -111,7 +114,7 @@ namespace Course_service.Controllers
             _context.Enrollments.Add(newEnrollment);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("CourseInfo: {Code}-{Price}", course.Code, course.Price);
+            _logger.LogInformation("MsgInfo: {User}-{Code}-{Price}", userEmail, course.Code, course.Price);
             await _publishEndpoint.Publish<CourseEnrolled>(new
             {
                 UserName = userName,
@@ -123,6 +126,52 @@ namespace Course_service.Controllers
 
             return CreatedAtAction("GetEnrollment", new { id = newEnrollment.Id }, newEnrollment);
         }
+
+        [Route("sync")]
+        [HttpPost]
+        public async Task<ActionResult> PostEnrollmentSync(EnrollmentDto enrollment)
+        {
+            string userName, userEmail;
+
+            var httpClient = _httpClientFactory.CreateClient("UsersApi");
+            var httpRequestMsg = new HttpRequestMessage(HttpMethod.Get, httpClient.BaseAddress + $"api/users/{enrollment.UserId}");
+            var httpResponseMsg = httpClient.Send(httpRequestMsg);
+
+            //Thread.Sleep(5000);
+
+            if (httpResponseMsg.IsSuccessStatusCode)
+            {
+                using var contentStream =  httpResponseMsg.Content.ReadAsStream();
+                var user =  JsonSerializer.Deserialize<UsersApiReturnedDto>(contentStream);
+                if (user == null) return NotFound("UserId not found.");
+                userName = user.UserName;
+                userEmail = user.Email;
+            }
+            else
+            {
+                return BadRequest(new { error = $"Error: Users-Service returned {httpResponseMsg.StatusCode}." });
+            }
+
+            var course =  _context.Courses.Find(enrollment.CourseId);
+            if (course == null) return NotFound("CourseId not found.");
+
+            var newEnrollment = Dto2Enrollment(enrollment);
+            _context.Enrollments.Add(newEnrollment);
+             _context.SaveChanges();
+
+            _logger.LogInformation("MsgInfo: {User}-{Code}-{Price}", userEmail, course.Code, course.Price);
+            await _publishEndpoint.Publish<CourseEnrolled>(new
+            {
+                UserName = userName,
+                UserEmail = userEmail,
+                CourseName = course.Code,
+                CoursePrice = course.Price,
+                EnrolledDate = newEnrollment.EnrolledDate
+            });
+
+            return CreatedAtAction("GetEnrollment", new { id = newEnrollment.Id }, newEnrollment);
+        }
+
 
         // DELETE: api/Enrollments/5
         [HttpDelete("{id}")]

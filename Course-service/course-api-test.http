@@ -1,11 +1,22 @@
 ###
+https://localhost:7131/api/users/2
+
+### ### ###
 https://localhost:7237/api/enrollments
 ###
 POST https://localhost:7237/api/enrollments
 content-type: application/json
 
 {
-    "UserId": "1",
+    "UserId": "6",
+    "CourseId": "2"
+}
+###
+POST https://localhost:7237/api/enrollments/sync
+content-type: application/json
+
+{
+    "UserId": "9",
     "CourseId": "1"
 }
 ###
@@ -13,11 +24,15 @@ PUT https://localhost:7237/api/enrollments/4
 content-type: application/json
 
 {
-    "Id": 5
 }
 ###
 DELETE https://localhost:7237/api/enrollments/99
 # x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+
+
+### ### ###
+https://localhost:7124/api/reports
+###
 
 
 ### ### ###
