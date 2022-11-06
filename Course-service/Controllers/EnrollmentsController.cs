@@ -129,7 +129,7 @@ namespace Course_service.Controllers
 
         [Route("sync")]
         [HttpPost]
-        public async Task<ActionResult> PostEnrollmentSync(EnrollmentDto enrollment)
+        public ActionResult PostEnrollmentSync(EnrollmentDto enrollment)
         {
             string userName, userEmail;
 
@@ -141,8 +141,8 @@ namespace Course_service.Controllers
 
             if (httpResponseMsg.IsSuccessStatusCode)
             {
-                using var contentStream =  httpResponseMsg.Content.ReadAsStream();
-                var user =  JsonSerializer.Deserialize<UsersApiReturnedDto>(contentStream);
+                using var contentStream = httpResponseMsg.Content.ReadAsStream();
+                var user = JsonSerializer.Deserialize<UsersApiReturnedDto>(contentStream);
                 if (user == null) return NotFound("UserId not found.");
                 userName = user.UserName;
                 userEmail = user.Email;
@@ -152,15 +152,15 @@ namespace Course_service.Controllers
                 return BadRequest(new { error = $"Error: Users-Service returned {httpResponseMsg.StatusCode}." });
             }
 
-            var course =  _context.Courses.Find(enrollment.CourseId);
+            var course = _context.Courses.Find(enrollment.CourseId);
             if (course == null) return NotFound("CourseId not found.");
 
             var newEnrollment = Dto2Enrollment(enrollment);
             _context.Enrollments.Add(newEnrollment);
-             _context.SaveChanges();
+            _context.SaveChanges();
 
             _logger.LogInformation("MsgInfo: {User}-{Code}-{Price}", userEmail, course.Code, course.Price);
-            await _publishEndpoint.Publish<CourseEnrolled>(new
+            var msgPublished = _publishEndpoint.Publish<CourseEnrolled>(new
             {
                 UserName = userName,
                 UserEmail = userEmail,
@@ -168,6 +168,7 @@ namespace Course_service.Controllers
                 CoursePrice = course.Price,
                 EnrolledDate = newEnrollment.EnrolledDate
             });
+            msgPublished.Wait();
 
             return CreatedAtAction("GetEnrollment", new { id = newEnrollment.Id }, newEnrollment);
         }

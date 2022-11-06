@@ -87,7 +87,7 @@ try
         {
             c.BaseAddress = new Uri("http://user-api/");
         }
-
+        c.Timeout = TimeSpan.FromMilliseconds(5000);
         c.DefaultRequestHeaders.Add("X-req-sid", "CoursesApi");
     });
 
