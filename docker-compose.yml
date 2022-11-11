@@ -37,11 +37,14 @@ services:
             dockerfile: aspnetapp\Dockerfile
         environment:
             - ConnectionStrings__DefaultConnection=Server=mssql;database=net_User;User Id=sa;Password=Admin123!
+            # - SEQ_ADDRESS=http://seq:5341
+            # SEQ_SERVER_URL: "http://seq:5341"
         ports:
             - 7131:80
             - 5011:443
         depends_on:
             - course-api
+            # - seq
     notification:
         image: ${DOCKER_REGISTRY-}notification
         build:
@@ -101,20 +104,6 @@ services:
                 # Wait on the sqlserver process
                 wait $$pid
                 exit 0
-    # app:
-    #     build:
-    #         context: .
-    #         dockerfile: aspnetapp/Dockerfile
-    #     environment:
-    #         ASPNETCORE_ENVIRONMENT: Development
-    #         SEQ_SERVER_URL: "http://seq:5341"
-    #         # - SEQ_ADDRESS=http://seq:5341
-    #     ports:
-    #         - 7131:80
-    #         - 5011:443
-    #     # depends_on:
-    #     #     - mysql
-    #     #     - seq
     # stub:
     #     build:
     #         context: .
@@ -135,13 +124,18 @@ services:
     #     volumes:
     #         - vmysql:/var/lib/mysql
     #         - ./dbSetup.sql:/docker-entrypoint-initdb.d/dbSetup.sql
+    # adminer:
+    #     image: adminer
+    #     restart: always
+    #     ports:
+    #         - 8080:8080
     # seq:
     #     image: datalust/seq
     #     restart: unless-stopped
     #     environment:
     #         - ACCEPT_EULA=Y
     #     ports:
-    #         - 8080:80
+    #         - 8081:80
     #         - 5342:5341
 
 volumes:
